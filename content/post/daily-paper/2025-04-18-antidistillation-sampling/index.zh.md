@@ -1,6 +1,6 @@
 ---
 title: "每日论文：反蒸馏采样"
-description: "来自CMU的 Antidistillation Sampling 论文总结与分析 (arXiv:2504.13146)。"
+description: "本文提出反蒸馏采样方法，通过在生成时毒化大语言模型的推理轨迹来干扰模型蒸馏，同时保持原始模型性能。"
 slug: antidistillation-sampling # 与英文版本保持一致
 date: 2025-04-18 00:00:00+0000
 categories:
