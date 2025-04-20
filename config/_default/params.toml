@@ -13,13 +13,13 @@ published = "Jan 02, 2006"
 lastUpdated = "Jan 02, 2006 15:04 MST"
 
 [sidebar]
-emoji = "🍥"
-subtitle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+# 副标题已移至 _languages.toml
 
 [sidebar.avatar]
 enabled = true
-local = true
-src = "img/avatar.png"
+local = false
+src = "https://pub-3882fdd9f81f44b996a0eb4c32a8c257.r2.dev/black-saber.jpg"
+# Automatically crop the image to 1:1 aspect ratio
 
 [article]
 headingAnchor = false

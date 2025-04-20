@@ -4,30 +4,14 @@
 
 # Theme i18n support
 # Available values: en, fr, id, ja, ko, pt-br, zh-cn, zh-tw, es, de, nl, it, th, el, uk, ar
-defaultContentLanguage = "en" # Set English as default
+defaultContentLanguage = "en"
 
 # Set hasCJKLanguage to true if DefaultContentLanguage is in [zh-cn ja ko]
 # This will make .Summary and .WordCount behave correctly for CJK languages.
-hasCJKLanguage = true # Enable CJK support for Chinese
+hasCJKLanguage = true
 
 # Change it to your Disqus shortname before using
 disqusShortname = "hugo-theme-stack"
 
-[languages]
-  [languages.en]
-    title = "Hugo Theme Stack Starter"
-    weight = 1
-    languageName = "English"
-    # languageCode = "en-us" # Optional: specific language code if needed
-  [languages.zh]
-    title = "Hugo 主题 Stack 入门" # Chinese title
-    weight = 2
-    languageName = "简体中文"
-    languageCode = "zh-cn" # Explicitly set Chinese Simplified
-
 [pagination]
 pagerSize = 5
-
-# Remove or comment out top-level title and languageCode as they are now defined per language
-# title = "Hugo Theme Stack Starter"
-# languageCode = "en-us"

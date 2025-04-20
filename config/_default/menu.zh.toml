@@ -48,9 +48,9 @@ url = "https://github.com/Yikai-Liao"
 icon = "brand-github"
 
 [[social]]
-identifier = "twitter"
-name = "Twitter"
-url = "https://twitter.com"
+identifier = "zhihu"
+name = "知乎"
+url = "https://www.zhihu.com/people/tai-shan-ye-zi"
 
 [social.params]
-icon = "brand-twitter"
+icon = "brand-zhihu"
