@@ -1,0 +1,56 @@
+# 配置主菜单和社交媒体菜单
+[[main]]
+identifier = "home"
+name = "主页"
+url = "/zh/"
+weight = 1
+[main.params]
+icon = "home"
+
+[[main]]
+identifier = "search"
+name = "搜索"
+url = "/zh/search/"
+weight = 2
+[main.params]
+icon = "search"
+
+[[main]]
+identifier = "archives"
+name = "归档"
+url = "/zh/archives/"
+weight = 3
+[main.params]
+icon = "archives"
+
+[[main]]
+identifier = "about"
+name = "关于"
+url = "/zh/about/"
+weight = 4
+[main.params]
+icon = "user"
+
+[[main]]
+identifier = "links"
+name = "友链"
+url = "/zh/links/"
+weight = 5
+[main.params]
+icon = "link"
+
+[[social]]
+identifier = "github"
+name = "GitHub"
+url = "https://github.com/CaiJimmy/hugo-theme-stack"
+
+[social.params]
+icon = "brand-github"
+
+[[social]]
+identifier = "twitter"
+name = "Twitter"
+url = "https://twitter.com"
+
+[social.params]
+icon = "brand-twitter"
