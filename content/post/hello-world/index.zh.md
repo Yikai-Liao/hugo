@@ -17,4 +17,10 @@ weight: 1       # Keep weight consistent or adjust as needed per language
 
 想要一个这样的网站吗？请查看 [hugo-theme-stack-stater](https://github.com/CaiJimmy/hugo-theme-stack-starter)
 
+让我们用欧拉恒等式来测试一下数学公式渲染：
+
+$$
+e^{i\pi} + 1 = 0
+$$
+
 > 照片来自 [Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski) on [Unsplash](https://unsplash.com/) 

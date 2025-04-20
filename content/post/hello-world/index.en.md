@@ -17,4 +17,10 @@ For more information about this theme, check the documentation: https://stack.ji
 
 Want a site like this? Check out [hugo-theme-stack-stater](https://github.com/CaiJimmy/hugo-theme-stack-starter)
 
+Let's test the math rendering with Euler's Identity:
+
+$$
+e^{i\pi} + 1 = 0
+$$
+
 > Photo by [Pawel Czerwinski](https://unsplash.com/@pawel_czerwinski) on [Unsplash](https://unsplash.com/)
