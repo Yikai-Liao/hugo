@@ -1,0 +1,22 @@
+{{/* layouts/partials/comments.html */}}
+{{ $commentsParams := .Site.Params.comments }}
+{{ $pageParams := .Params }}
+
+{{/* Check if comments are enabled globally and for this page (default to enabled if not set in front matter) */}}
+{{ if and $commentsParams.enabled (ne $pageParams.comments false) }}
+    {{ $provider := $commentsParams.provider }}
+
+    {{/* Load the partial for the configured provider */}}
+    {{ if eq $provider "giscus" }}
+        {{ partial "comments/provider/giscus.html" . }}
+    {{ else if eq $provider "utterances" }}
+        {{/* Assuming utterances partial exists at this path */}}
+        {{ partial "comments/provider/utterances.html" . }}
+    {{/* Add other providers as needed */}}
+    {{/* else if eq $provider "disqus" */}}
+    {{/*     {{ partial "comments/provider/disqus.html" . }} */}}
+    {{ else }}
+        {{/* Optional: Warn about unsupported or unconfigured provider */}}
+        {{ warnf "Unsupported or unconfigured comment provider: %s" $provider }}
+    {{ end }}
+{{ end }} 
