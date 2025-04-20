@@ -1,7 +1,7 @@
 ---
 title: "每日论文：反蒸馏采样"
 description: "本文提出反蒸馏采样方法，通过在生成时毒化大语言模型的推理轨迹来干扰模型蒸馏，同时保持原始模型性能。"
-slug: antidistillation-sampling # 与英文版本保持一致
+slug: 2025-04-antidistillation-sampling # Updated slug with date (must match English version)
 date: 2025-04-18 00:00:00+0000
 categories:
     - Daily Paper
@@ -14,7 +14,9 @@ tags:
 ---
 
 **论文:** [Antidistillation Sampling](https://arxiv.org/abs/2504.13146)
+
 **作者:** Yash Savani, Asher Trockman, Zhili Feng, Avi Schwarzschild, Alexander Robey, Marc Finzi, J. Zico Kolter (CMU)
+
 **发表日期:** 2025年4月17日 (arXiv)
 
 ---
