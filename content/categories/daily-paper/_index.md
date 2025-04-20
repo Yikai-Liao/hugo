@@ -1,6 +1,8 @@
 ---
 title: Daily Paper
-color: "#228B22" # Grass green (ForestGreen)
+description: "Summaries and thoughts on recent academic papers."
+# Define style using the structure expected by the theme
+style:
+    background: "#2a9d8f"
+    color: "#fff"
 ---
-
-# Optional: Add a description for the category page here if needed. 
