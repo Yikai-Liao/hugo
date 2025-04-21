@@ -3,12 +3,14 @@
 languageName = "English"
 languagedirection = "ltr"
 title = "Yikai Liao's Tech Blog"
-subtitle = "Exploring Programming, AI and Life"
 weight = 1
+[en.params]
+  subtitle = "Exploring Programming, AI and Life"
 
 [zh]
 languageName = "中文"
 languagedirection = "ltr"
 title = "廖奕凯的技术博客"
-subtitle = "探索编程、人工智能与生活"
 weight = 2
+[zh.params]
+  subtitle = "探索编程、人工智能与生活"
