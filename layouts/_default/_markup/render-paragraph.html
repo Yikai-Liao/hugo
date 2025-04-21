@@ -1,0 +1,7 @@
+{{- $paragraphIndex := .Page.Scratch.Get "paragraphIndex" | default 0 -}}
+{{- $chunkHtmlId := printf "%s-chunk-%d" (.Page.File.UniqueID | default (printf "page%d" .Page.File.Path)) $paragraphIndex -}}
+{{- .Page.Scratch.Set "paragraphIndex" (add $paragraphIndex 1) -}}
+
+<p id="{{ $chunkHtmlId }}">
+    {{- .Text | .Page.RenderString (dict "display" "inline") -}}{{- /* Render inner content, supporting Markdown within the paragraph */ -}}
+</p> 

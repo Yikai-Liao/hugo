@@ -21,19 +21,41 @@ disqusShortname = "hugo-theme-stack"
 copyright = "© 2024 Your Name or Company Name" # Please update this
 
 [params.author]
-  name = "Your Name" # Please update this
-  email = "your.email@example.com" # Please update this
+  name = "Yikai Liao" # Please update this
+  email = "lyk-boya@outlook.com" # Please update this
 
 [pagination]
 pagerSize = 5
 
 [outputs]
-  home = ["HTML", "RSS"]
-  section = ["HTML", "RSS"]
+  # Combine outputs from both branches
+  home = ["HTML", "RSS", "JSON"]
+  section = ["HTML", "RSS", "ContentJSON"]
   taxonomy = ["HTML"]
   term = ["HTML"]
+
+[outputFormats]
+  # Keep JSON format (likely for theme's default search)
+  [outputFormats.JSON]
+    baseName = "index" 
+    isPlainText = true
+    mediaType = "application/json"
+  # Keep ContentJSON format (for AI search build script)
+  [outputFormats.ContentJSON]
+    mediaType = "application/json"
+    baseName = "content" 
+    isPlainText = true
+    notAlternative = true
 
 [services]
   [services.rss]
     # Include all posts in RSS feed
     limit = -1
+
+# --- Proxy config moved to root hugo.toml ---
+# [[server.proxy]]
+# # Source path on your local server
+# from = "/api/ai-search"
+# # Target URL of your deployed Cloudflare Worker - TEMPORARILY CHANGED FOR TESTING
+# to = "https://httpbin.org/post" # Changed target to httpbin
+# # --- End Proxy Configuration ---

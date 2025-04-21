@@ -1,0 +1,14 @@
+{{- $allPagesData := slice -}}
+{{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections | default site.RegularPages -}}
+
+{{- range $index, $page := $pages -}}
+  {{- $pageData := dict
+      "id" ($page.File.UniqueID | default (printf "page%d" $index))
+      "title" $page.Title
+      "url" $page.Permalink
+      "rawContent" $page.RawContent
+  -}}
+  {{- $allPagesData = $allPagesData | append $pageData -}}
+{{- end -}}
+
+{{- $allPagesData | jsonify (dict "indent" "  ") -}} 

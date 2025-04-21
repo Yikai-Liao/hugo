@@ -1,0 +1,31 @@
+{{- /* Get pages from main sections, exclude hidden pages */ -}}
+{{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections -}}
+{{- $notHidden := where $pages "Params.hidden" "!=" true -}}
+{{- $filtered := $notHidden -}}
+
+{{- /* Prepare results array */ -}}
+{{- $result := slice -}}
+
+{{- range $filtered -}}
+    {{- /* Basic data: title, date, permalink, plain content */ -}}
+    {{- $data := dict "title" .Title "date" .Date "permalink" .Permalink "content" (.Plain | safeHTML) -}}
+
+    {{- /* Optional: Add featured image if available (adapted from theme) */ -}}
+    {{- $image := partialCached "helper/image" (dict "Context" . "Type" "articleList") .RelPermalink "articleList" | default (dict "exists" false) -}}
+    {{- if $image.exists -}}
+        {{- $imagePermalink := "" -}}
+        {{- if and $image.resource (default true site.Params.imageProcessing.cover.enabled) -}}
+            {{- /* Attempt to create a thumbnail if image processing is enabled */ -}}
+            {{- $thumbnail := $image.resource.Fill "120x120" -}}
+            {{- $imagePermalink = $thumbnail.RelPermalink -}} {{- /* Use RelPermalink for consistency */ -}}
+        {{- else -}}
+            {{- $imagePermalink = $image.permalink -}}
+        {{- end -}}
+        {{- $data = merge $data (dict "image" ($imagePermalink | absURL)) -}}
+    {{- end -}}
+
+    {{- $result = $result | append $data -}}
+{{- end -}}
+
+{{- /* Output the final JSON array */ -}}
+{{- $result | jsonify -}} 

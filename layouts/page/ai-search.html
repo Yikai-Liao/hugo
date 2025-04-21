@@ -1,0 +1,138 @@
+{{ define "body-class" }}template-search{{ end }}
+{{ define "main" }}
+{{/* Add custom styles for AI Search dark mode with explicit colors */}}
+<style>
+/* Ensure form and paragraph have relative positioning for absolute label */
+.search-form p {
+    position: relative;
+}
+html[data-scheme="dark"] .search-form label,
+html[data-scheme="light"] .search-form label {
+    /* Ensure label is positioned correctly and visible */
+    position: absolute;
+    top: 10px; /* Slightly adjusted top position */
+    inset-inline-start: 20px;
+    z-index: 1; /* Ensure label is above input */
+    /* Let theme handle light mode color, override only dark */
+}
+html[data-scheme="dark"] .search-form label {
+    color: #eee;
+}
+html[data-scheme="dark"] .search-form input {
+    background-color: #444; /* Lighter background for input */
+    color: #f0f0f0;
+    border: 1px solid #555;
+}
+html[data-scheme="dark"] .search-form input::placeholder {
+    color: #888;
+    opacity: 1;
+}
+/* Ensure placeholder is visible in light mode too */
+html[data-scheme="light"] .search-form input::placeholder {
+    color: #555; /* Adjust as needed for light mode */
+    opacity: 1;
+}
+
+/* Page title and content dark mode styles */
+html[data-scheme="dark"] .page__title,
+html[data-scheme="dark"] .page__content p,
+html[data-scheme="dark"] .page__content {
+    color: #eee;
+}
+
+/* Restore dark mode styles for dynamically generated search results */
+html[data-scheme="dark"] .search-results-section h2 {
+    color: #eee; /* Match page title color */
+}
+/* Style the list container */
+html[data-scheme="dark"] ul.search-results {
+    list-style-type: none; /* Remove bullet points */
+    padding-inline-start: 0; /* Remove default padding */
+    background-color: #333; /* Overall background for the list */
+    border-radius: 8px; /* Increased rounded corners for the container */
+    padding: 0.5em 1em; /* Padding inside the container */
+    margin-top: 1em; /* Space above the results block */
+}
+/* Style individual list items */
+html[data-scheme="dark"] ul.search-results li {
+    color: #eee; /* Bright text */
+    padding: 1em 0; /* Vertical padding within item, no horizontal */
+    border-bottom: 1px solid #555; /* Separator line */
+}
+/* Remove border from the last item */
+html[data-scheme="dark"] ul.search-results li:last-child {
+    border-bottom: none;
+}
+/* Keep link hover subtle */
+html[data-scheme="dark"] ul.search-results li a:hover {
+    color: #aecbfa; /* Keep subtle hover for any nested links */
+}
+/* Assuming title is h3 and preview is p inside the li > a structure */
+/* Need to check ai-search.js if this is correct */
+html[data-scheme="dark"] ul.search-results li h3 {
+     color: #eee; /* Ensure title is bright */
+     margin-bottom: 0.5em; /* Space between title and preview */
+}
+html[data-scheme="dark"] ul.search-results li p {
+    color: #bbb; /* Slightly dimmer for preview text */
+    margin-bottom: 0; /* Remove default margin if any */
+}
+html[data-scheme="dark"] ul.search-results li mark {
+    background-color: gold; /* Standard yellow highlight */
+    color: black; /* Black text on yellow */
+    padding: 0.1em 0.2em; /* Add slight padding to mark */
+    border-radius: 2px; /* Optional: slight rounding */
+}
+/* Loading and error messages */
+html[data-scheme="dark"] .search-loading,
+html[data-scheme="dark"] .search-error {
+    color: #eee;
+}
+.ai-brain-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  margin-right: 0.3em;
+  display: inline-block;
+}
+html[data-scheme="dark"] .ai-brain-icon {
+  filter: invert(1) brightness(1.5);
+}
+</style>
+
+<article class="page-container" itemscope itemtype="http://schema.org/WebPage">
+    {{/* <header class="page-header">
+        <h1 class="page-title" itemprop="name">
+            {{ .Title }}
+        </h1>
+        {{- with .Params.summary }}
+        <p class="page-description" itemprop="description">{{ . }}</p>
+        {{- end }}
+    </header> */}}
+
+    <section class="page-content">
+        <form id="ai-search-form" class="search-form" action="#" method="post" autocomplete="off" {{ with .OutputFormats.Get "json" -}}data-json="{{ .RelPermalink }}"{{- end }}>
+            <label for="ai-search-input" class="sr-only">Search</label>
+            <input type="search" id="ai-search-input" class="search-input" name="q" placeholder="{{ .Params.placeholder | default "Search..." }}" required>
+            <button type="submit" class="search-button" aria-label="Search">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-search">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </form>
+
+        <!-- Container for Unified Search Results -->
+        <div class="search-results-section">
+            <div id="ai-search-loading" class="search-loading" style="display: none;">正在智能搜索中...</div>
+            <div id="ai-search-error" class="search-error" style="display: none;"></div>
+            <ul id="search-results" class="search-results" aria-live="polite"></ul>
+        </div>
+    </section>
+
+    {{/* Include the JS file specific to AI search */}}
+    {{ $script := resources.Get "js/ai-search.js" | resources.Minify | resources.Fingerprint }}
+    <script src="{{ $script.Permalink }}" defer></script>
+
+</article>
+{{ end }}

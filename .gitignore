@@ -1,4 +1,13 @@
 public
 resources
 .hugo_build.lock
-jsconfig.json
+# jsconfig.json # Might be useful to keep?
+
+# Node / Build specific
+node_modules/
+package-lock.json # Usually committed, but depends on project policy. Comment out if needed.
+tmp_build/
+*.log # Ignore log files (e.g., wrangler logs)
+
+# OS specific
+.DS_Store

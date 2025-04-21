@@ -1,0 +1,44 @@
+# Hugo Configuration File
+
+# --- Proxy config below is commented out as we are calling worker directly from JS now ---
+# [server]
+#   # --- Local Development Proxy for AI Search Worker ---
+#   [[proxy]]
+#   # Source path on your local server
+#   from = "/api/ai-search"
+#   # Target URL for testing
+#   to = "https://httpbin.org/post"
+#   # --- End Proxy Configuration ---
+
+# --- Output Format Configuration for Content JSON ---
+[mediaTypes]
+  [mediaTypes."application/json"]
+    suffixes = ["json"]
+
+[outputFormats]
+  [outputFormats.ContentJSON]
+    mediaType = "application/json"
+    baseName = "content" # Base name for the output file
+    isPlainText = false
+    notAlternative = true # Treat as a primary output format
+
+[outputs]
+  # Define outputs for different kinds of pages
+  # Add 'ContentJSON' to sections you want the JSON for (e.g., 'post')
+  section = ["HTML", "ContentJSON", "RSS"]
+  home = ["HTML", "RSS"] # Keep default for home page
+  page = ["HTML", "JSON"]       # Add JSON output for single pages
+
+# --- Language Configuration (Example - ensure yours is present) ---
+# Make sure you have your language definitions
+# defaultContentLanguage = "en"
+# [languages.en]
+#   languageName = "English"
+#   weight = 1
+# [languages.zh]
+#   languageName = "中文"
+#   weight = 2
+
+# --- Params (Example - ensure yours is present) ---
+[params]
+  mainSections = ["post"] # If you use this to filter pages 

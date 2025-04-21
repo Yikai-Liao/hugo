@@ -1,0 +1,29 @@
+{
+  "name": "hugo-vector-search",
+  "version": "1.0.0",
+  "description": "Hugo site with Cloudflare Vectorize search",
+  "main": "index.js",
+  "scripts": {
+    "build:hugo": "hugo",
+    "build:chunks": "node scripts/create-chunks.js",
+    "build:index": "node scripts/build-vector-index.js",
+    "build:index:dryrun": "$env:DRY_RUN='true'; node scripts/build-vector-index.js",
+    "build:all": "npm run build:hugo && npm run build:chunks && npm run build:index",
+    "test:search": "node scripts/test-ai-search.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hugo",
+    "cloudflare",
+    "vectorize",
+    "search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.12.0"
+  }
+}
