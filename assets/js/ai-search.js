@@ -85,14 +85,27 @@ document.addEventListener('DOMContentLoaded', () => {
           keywordDataPromise = fetch(keywordJsonURL)
               .then(res => {
                   if (!res.ok) throw new Error(`Failed to fetch keyword data: ${res.statusText}`);
-                  return res.json();
+                  return res.text(); // Get raw text to handle NDJSON
               })
               .then(data => {
-                  // Pre-process content: remove HTML tags
-                  keywordData = data.map(item => ({
-                      ...item,
-                      plainContent: parser.parseFromString(item.content || '', 'text/html').body.innerText
-                  }));
+                  try {
+                      let allObjects = [];
+                      if (data.trim().startsWith('[')) {
+                          // JSON array
+                          allObjects = JSON.parse(data);
+                      } else {
+                          // NDJSON
+                          const lines = data.split('\n').filter(line => line.trim().length > 0);
+                          allObjects = lines.map(line => {
+                              try { return JSON.parse(line); } catch (e) { return null; }
+                          });
+                      }
+                      const parsedData = allObjects.filter(item => item && typeof item.title === 'string' && typeof item.content === 'string');
+                      keywordData = parsedData;
+                  } catch (parseError) {
+                      console.error("Error parsing keyword data string:", parseError, "\nRaw data string:", data);
+                      throw new Error("Failed to parse keyword data.");
+                  }
                   return keywordData;
               })
               .catch(err => {
@@ -114,50 +127,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const regex = new RegExp(uniqueTerms.map(escapeRegExp).join('|'), 'gi');
 
+          console.log("[DEBUG] Starting keyword search loop with terms:", uniqueTerms, "and regex:", regex); // DEBUG
           for (const item of data) {
-              const titleMatches = [];
-              const contentMatches = [];
-              let currentMatch;
-
-              // Find matches in title
-              while ((currentMatch = regex.exec(item.title)) !== null) {
-                  titleMatches.push({ start: currentMatch.index, end: currentMatch.index + currentMatch[0].length });
-                  // Prevent infinite loops with zero-width matches
-                  if (currentMatch.index === regex.lastIndex) { regex.lastIndex++; }
-              }
-              regex.lastIndex = 0; // Reset regex state
-
-              // Find matches in plain content
-              while ((currentMatch = regex.exec(item.plainContent)) !== null) {
-                  contentMatches.push({ start: currentMatch.index, end: currentMatch.index + currentMatch[0].length });
-                  if (currentMatch.index === regex.lastIndex) { regex.lastIndex++; }
-              }
-              regex.lastIndex = 0;
-
-              const totalMatchCount = titleMatches.length + contentMatches.length;
-              if (totalMatchCount > 0) {
-                  let processedTitle = item.title;
-                  if (titleMatches.length > 0) {
-                     processedTitle = processMatches(item.title, titleMatches, false);
+              // DEBUG: Log the types of title and content for the first few items BEFORE the check
+              if (item && typeof item === 'object' && item !== null) { // Basic check to avoid errors on non-objects
+                  if (data.indexOf(item) < 5) { // Log only for first 5 items
+                      console.log(`[DEBUG] Item ${data.indexOf(item)} types: typeof title = ${typeof item.title}, typeof content = ${typeof item.content}`);
                   }
+              } else if (data.indexOf(item) < 5) {
+                   console.log(`[DEBUG] Item ${data.indexOf(item)} is not a valid object:`, item);
+              }
 
-                  let preview = '';
-                  if (contentMatches.length > 0) {
-                      preview = processMatches(item.plainContent, contentMatches);
+              // Only process items that actually have both title and content properties
+              if (item && typeof item.title === 'string' && typeof item.content === 'string') {
+                  // Log the item being processed (optional, can be removed later)
+                  console.log(`[DEBUG] Processing item: Title = "${item.title.substring(0, 50)}...", Content = "${item.content.substring(0, 100)}..."`);
+                  
+                  const titleMatches = [];
+                  const contentMatches = [];
+                  let currentMatch;
+
+                  // Find matches in title
+                  while ((currentMatch = regex.exec(item.title)) !== null) {
+                      titleMatches.push({ start: currentMatch.index, end: currentMatch.index + currentMatch[0].length });
+                      // Prevent infinite loops with zero-width matches
+                      if (currentMatch.index === regex.lastIndex) { regex.lastIndex++; }
+                  }
+                  regex.lastIndex = 0; // Reset regex state
+
+                  // Find matches in plain content
+                  while ((currentMatch = regex.exec(item.content)) !== null) {
+                      contentMatches.push({ start: currentMatch.index, end: currentMatch.index + currentMatch[0].length });
+                      if (currentMatch.index === regex.lastIndex) { regex.lastIndex++; }
+                  }
+                  regex.lastIndex = 0;
+
+                  const totalMatchCount = titleMatches.length + contentMatches.length;
+                  if (totalMatchCount > 0) {
+                      let processedTitle = item.title;
+                      if (titleMatches.length > 0) {
+                         processedTitle = processMatches(item.title, titleMatches, false);
+                      }
+
+                      let preview = '';
+                      if (contentMatches.length > 0) {
+                          preview = processMatches(item.content, contentMatches);
+                      } else {
+                          preview = escapeHTML(item.content.substring(0, 140));
+                      }
+
+                      results.push({
+                          ...item,
+                          title: processedTitle, // Title with highlights (already has content)
+                          preview: preview, // Content preview with highlights
+                          matchCount: totalMatchCount
+                      });
                   } else {
-                      preview = escapeHTML(item.plainContent.substring(0, 140));
+                      // Log skipped items (optional)
+                      // console.log("[DEBUG] Skipping item without title/content strings:", item);
                   }
-
-                  results.push({
-                      ...item,
-                      title: processedTitle, // Title with highlights
-                      preview: preview, // Content preview with highlights
-                      matchCount: totalMatchCount
-                  });
               }
           }
 
           // Sort results by match count
+          console.log(`Keyword search found ${results.length} matches. First match:`, results.length > 0 ? results[0] : 'None'); // DEBUG: Log results
           return results.sort((a, b) => b.matchCount - a.matchCount);
       } catch (err) {
           console.error("Error during keyword search:", err);
@@ -203,11 +236,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 2. Execute AI Semantic Search (Server-side via Worker) ---
     console.log("Initiating AI semantic search...");
+
+    // Determine current language from HTML tag
+    const currentLang = document.documentElement.lang || 'en'; // Default to 'en' if lang attr missing
+    const urlWithLang = `${aiWorkerUrl}?lang=${currentLang}`; // Add missing semicolon
+
+    console.log(`Targeting Worker URL: ${urlWithLang}`);
+
     if (aiResultTitle) aiResultTitle.textContent = '智能匹配结果'; // Set title early
     loadingIndicator.style.display = 'block';
     aiResultsContainer.innerHTML = '';
 
-    fetch(aiWorkerUrl, {
+    fetch(urlWithLang, { // Use the URL with language parameter
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: query }),
@@ -241,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Result Display Functions ---
   function displayKeywordResults(results) {
+    console.log("Displaying Keyword Results:", results); // DEBUG: Log received results
     if (!keywordResultsContainer) return;
     if (keywordResultTitle) keywordResultTitle.textContent = `关键词匹配结果 (${results.length})`;
 
