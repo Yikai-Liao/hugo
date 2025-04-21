@@ -1,0 +1,186 @@
+{{ define "body-class" }}template-search{{ end }}
+{{ define "main" }}
+{{/* Add custom styles for AI Search dark mode with explicit colors */}}
+<style>
+/* Ensure form and paragraph have relative positioning for absolute label */
+.search-form p {
+    position: relative;
+}
+html[data-scheme="dark"] .search-form label,
+html[data-scheme="light"] .search-form label {
+    /* Ensure label is positioned correctly and visible */
+    position: absolute;
+    top: 10px; /* Slightly adjusted top position */
+    inset-inline-start: 20px;
+    z-index: 1; /* Ensure label is above input */
+    /* Let theme handle light mode color, override only dark */
+}
+html[data-scheme="dark"] .search-form label {
+    color: #eee;
+}
+html[data-scheme="dark"] .search-form input {
+    background-color: #333;
+    color: #f0f0f0;
+    border: 1px solid #555;
+}
+html[data-scheme="dark"] .search-form input::placeholder {
+    color: #888;
+    opacity: 1;
+}
+/* Ensure placeholder is visible in light mode too */
+html[data-scheme="light"] .search-form input::placeholder {
+    color: #555; /* Adjust as needed for light mode */
+    opacity: 1;
+}
+
+/* Page title and content dark mode styles */
+html[data-scheme="dark"] .page__title,
+html[data-scheme="dark"] .page__content p,
+html[data-scheme="dark"] .page__content {
+    color: #eee;
+}
+</style>
+
+<article class="page">
+    <header class="page__header">
+        <h1 class="page__title">{{ .Title }}</h1>
+    </header>
+    <div class="page__content">
+        {{ .Content }}
+
+        {{/* --- AI Search Form based on theme's search.html --- */}}
+        <form class="search-form">
+            <p>
+                <label>{{ T "aiSearch" }}</label>
+                <input id="ai-search-input" name="keyword" placeholder="{{ T `searchPlaceholder` }}" />
+            </p>
+            <button type="button" id="ai-search-button" title="{{ T `search` }}">
+                 {{ partial "helper/icon" "search" }}
+            </button>
+        </form>
+        {{/* --- End AI Search Form --- */}}
+
+        {{/* --- AI Search Results Area --- */}}
+        <div class="search-result">
+            <div id="ai-search-loading" style="display: none; margin-top: 20px;">Loading...</div>
+            <div id="ai-search-error" style="display: none; margin-top: 20px; color: red;"></div>
+            {{/* Title will be dynamically added if needed, or keep static */}}
+            {{/* <h3 class="search-result--title section-title">Search Results</h3> */}}
+            <div class="search-result--list article-list--compact" style="margin-top: 20px;">
+                 <ul id="ai-search-results" style="list-style: none; padding: 0;"></ul>
+            </div>
+        </div>
+        {{/* --- End AI Search Results Area --- */}}
+    </div>
+</article>
+
+<script>
+    // Existing JavaScript for Bonsai API interaction remains the same
+    const searchInput = document.getElementById('ai-search-input');
+    const searchButton = document.getElementById('ai-search-button');
+    const resultsContainer = document.getElementById('ai-search-results');
+    const loadingIndicator = document.getElementById('ai-search-loading');
+    const errorContainer = document.getElementById('ai-search-error');
+
+    // WARNING: Embedding credentials directly in client-side JS is insecure!
+    const bonsaiUrl = 'https://nanyang-technologica-1691025251.ap-southeast-2.bonsaisearch.net:443';
+    const bonsaiIndex = 'hugo';
+    const bonsaiUser = 'xwYPu5rSdh';
+    const bonsaiPass = 'vTHEksc2UyLuiJ7ZQm';
+    const searchEndpoint = `${bonsaiUrl}/${bonsaiIndex}/_search`;
+    const basicAuth = 'Basic ' + btoa(bonsaiUser + ':' + bonsaiPass);
+
+    const performSearch = async () => {
+        const query = searchInput.value.trim();
+        if (!query) {
+            resultsContainer.innerHTML = '';
+            errorContainer.style.display = 'none';
+            return;
+        }
+        loadingIndicator.style.display = 'block';
+        resultsContainer.innerHTML = '';
+        errorContainer.style.display = 'none';
+        const esQuery = {
+            "query": {
+                "multi_match": {
+                    "query": query,
+                    "fields": ["title^3", "content", "tags", "categories"],
+                    "fuzziness": "AUTO"
+                }
+            },
+            "size": 10
+        };
+        try {
+            const response = await fetch(searchEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Authorization': basicAuth,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(esQuery)
+            });
+            loadingIndicator.style.display = 'none';
+            if (!response.ok) {
+                let errorMsg = `Search failed: ${response.status} ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    console.error('Bonsai Search Error:', errorData);
+                    errorMsg += ` - ${errorData.error?.reason || JSON.stringify(errorData)}`;
+                } catch (e) {
+                    console.error('Failed to parse error response as JSON');
+                }
+                 throw new Error(errorMsg);
+            }
+            const data = await response.json();
+            displayResults(data.hits.hits);
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            loadingIndicator.style.display = 'none';
+            errorContainer.textContent = `{{ T "searchError" }}: ${error.message}`;
+            errorContainer.style.display = 'block';
+        }
+    };
+    const displayResults = (hits) => {
+        resultsContainer.innerHTML = '';
+        if (!hits || hits.length === 0) {
+            resultsContainer.innerHTML = `<li>{{ T "noResults" }}</li>`;
+            return;
+        }
+        hits.forEach(hit => {
+            const source = hit._source;
+            const li = document.createElement('li');
+            li.style.marginBottom = '15px';
+            li.style.borderBottom = '1px solid #eee';
+            li.style.paddingBottom = '10px';
+            const titleLink = document.createElement('a');
+            titleLink.href = source.uri;
+            titleLink.textContent = source.title || 'No Title';
+            titleLink.style.fontWeight = 'bold';
+            titleLink.style.fontSize = '1.1em';
+            const dateSpan = document.createElement('span');
+            dateSpan.textContent = source.date ? ` (${source.date})` : '';
+            dateSpan.style.fontSize = '0.9em';
+            dateSpan.style.color = '#666';
+            dateSpan.style.marginLeft = '5px';
+            const contentP = document.createElement('p');
+            let contentPreview = 'No content available';
+            if (source.content) {
+                 contentPreview = source.content.substring(0, 150) + (source.content.length > 150 ? '...' : '');
+            }
+            contentP.textContent = contentPreview;
+            contentP.style.fontSize = '0.95em';
+            contentP.style.marginTop = '5px';
+            li.appendChild(titleLink);
+            li.appendChild(dateSpan);
+            li.appendChild(contentP);
+            resultsContainer.appendChild(li);
+        });
+    };
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    });
+</script>
+{{ end }} 

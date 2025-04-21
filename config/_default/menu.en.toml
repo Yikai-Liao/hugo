@@ -16,6 +16,14 @@ weight = 2
 icon = "search"
 
 [[main]]
+identifier = "ai-search"
+name = "AI Search"
+url = "/ai-search"
+weight = 2
+[main.params]
+icon = "brain"
+
+[[main]]
 identifier = "archives"
 name = "Archives"
 url = "/archives"
