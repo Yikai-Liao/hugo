@@ -22,7 +22,7 @@ name = "AI 搜索"
 url = "/zh/ai-search/" # Points to the new AI Search page (Chinese version)
 weight = 2.5 # Position it after Search
 [main.params]
-icon = "search"
+icon = "brain"
 
 [[main]]
 identifier = "archives"

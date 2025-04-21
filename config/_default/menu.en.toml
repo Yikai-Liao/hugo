@@ -22,7 +22,7 @@ name = "AI Search"
 url = "/ai-search/" # Points to the new AI Search page
 weight = 2.5 # Position it after Search
 [main.params]
-icon = "search"
+icon = "brain"
 
 
 [[main]]

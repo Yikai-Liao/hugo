@@ -213,6 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       path = link;
     }
+    // 去除 baseURL 前缀
+    const base = document.querySelector('base')?.href || '/';
+    const basePath = new URL(base, window.location.origin).pathname.replace(/\/$/, '');
+    if (basePath !== '' && path.startsWith(basePath)) {
+      path = path.slice(basePath.length);
+      if (!path.startsWith('/')) path = '/' + path;
+    }
     // 去除锚点、参数、末尾斜杠
     return path.replace(/[#?].*$/, '').replace(/\/$/, '');
   }
@@ -274,7 +281,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const li = document.createElement('li');
       li.className = 'search-result-item article-list--compact__item';
       const a = document.createElement('a');
-      a.href = result.permalink || result.anchor_link;
+      // 拼接 baseURL，确保跳转适配本地和线上
+      const base = document.querySelector('base')?.href || '/';
+      let href = result.permalink || result.anchor_link;
+      if (href && !href.startsWith('http')) {
+        href = base.replace(/\/$/, '') + (href.startsWith('/') ? href : '/' + href);
+      }
+      a.href = href;
       a.className = 'article-list--compact__link';
       // 标题
       const titleSpan = document.createElement('span');
@@ -287,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // AI-only结果加脑图标（先设置内容再插入图标，避免被覆盖）
       if (result.isAIOnly) {
-        const base = document.querySelector('base')?.href || '/';
         const brainIcon = document.createElement('img');
         brainIcon.className = 'ai-brain-icon';
         brainIcon.alt = 'AI';
