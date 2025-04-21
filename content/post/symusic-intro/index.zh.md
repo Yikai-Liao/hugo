@@ -1,7 +1,7 @@
 ---
 title: "使用 `symusic` 提升符号化音乐处理效率"
 date: 2025-04-21T00:00:00Z
-draft: false
+draft: true
 # cover:
 #     image: "cover.jpg" # image path/url
 #     alt: "this is a post image" # alt text
