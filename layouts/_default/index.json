@@ -1,16 +1,15 @@
+[
 {{- $mainSections := .Site.Params.mainSections | default (slice "post") -}}
 {{- $pages := where .Site.RegularPages "Section" "in" $mainSections -}}
-{{- range $index, $page := $pages -}}
-{{/* Action line */}}
-{{- printf "{\"index\":{\"_index\":\"hugo\",\"_id\":\"%s\"}}" $page.File.UniqueID -}}
-{{- "\n" -}}
-{{/* Data line - ensure jsonify result is treated as string */}}
-{{- $pageData := dict "uri" $page.Permalink "title" $page.Title "content" $page.Plain "date" ($page.Date.Format "2006-01-02") "tags" $page.Params.tags "categories" $page.Params.categories -}}
-{{- printf "%s" ($pageData | jsonify) -}}
-{{- if ne (add $index 1) (len $pages) -}}
-{{/* Add newline after data line unless it's the last page */}}
-{{- "\n" -}}
+{{- range $i, $page := $pages -}}
+  {{- if $i }},{{ end }}
+  {
+    "uri": {{ $page.Permalink | jsonify }},
+    "title": {{ $page.Title | jsonify }},
+    "content": {{ $page.Plain | jsonify }},
+    "date": {{ $page.Date.Format "2006-01-02" | jsonify }},
+    "tags": {{ $page.Params.tags | jsonify }},
+    "categories": {{ $page.Params.categories | jsonify }}
+  }
 {{- end -}}
-{{- end -}}
-{{/* Ensure final trailing newline for bulk API */}}
-{{- "\n" -}} 
+] 
