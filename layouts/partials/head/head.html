@@ -1,0 +1,123 @@
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+{{/* Title - Enhanced Logic */}}
+<title>
+    {{- if .IsHome -}}
+        {{ .Site.Title }}
+    {{- else if .Page.Title -}}
+        {{ .Page.Title }} | {{ .Site.Title }}
+    {{- else -}}
+        {{ .Site.Title }}
+    {{- end -}}
+</title>
+
+{{/* Meta Description - Enhanced Logic */}}
+{{- $description := "" -}}
+{{- if .IsHome -}}
+    {{- $description = site.Params.description -}}
+{{- else -}}
+    {{- with .Params.description -}}
+        {{- $description = . -}}
+    {{- else -}}
+        {{- $description = .Summary -}} {{/* Fallback to summary if no description */}}
+    {{- end -}}
+{{- end -}}
+{{- with $description -}}
+    <meta name="description" content="{{- . | plainify | truncate 160 -}}">
+{{- end }}
+
+{{/* Author */}}
+{{- with site.Params.author.name -}}
+<meta name="author" content="{{ . }}">
+{{- end }}
+
+{{/* Canonical URL - Enhanced Logic */}}
+{{- if isset .Params "canonical" -}}
+    <link rel="canonical" href="{{ .Params.canonical }}">
+{{- else -}}
+    <link rel="canonical" href="{{ .Permalink }}">
+{{- end }}
+
+{{/* Favicon - Using Theme's Logic */}}
+{{- with .Site.Params.favicon }}
+    <link rel="shortcut icon" href="{{ . | relURL }}" />
+{{ end }}
+
+{{/* CSS - Using Theme's Partial */}}
+{{- partial "head/style.html" . -}}
+
+{{/* JS - Using Theme's Partial */}}
+{{- partial "head/script.html" . -}}
+
+{{/* Noindex/Nofollow */}}
+{{- if or .Params.noindex .Params.private -}}
+<meta name="robots" content="noindex, nofollow">
+{{- end }}
+
+{{/* Open Graph / Twitter Cards - Enhanced Logic */}}
+{{- $ogType := "website" -}}
+{{- $ogTitle := "" -}}
+{{- $ogDescription := $description -}}
+{{- $ogImage := site.Params.image -}} {{/* Default image from params.toml */}}
+{{- $twitterCard := "summary_large_image" -}}
+{{- $twitterCreator := site.Params.Twitter_Site -}}
+
+{{- if .IsPage -}}
+    {{- $ogType = "article" -}}
+{{- end -}}
+
+{{- if .IsHome -}}
+    {{- $ogTitle = site.Title -}}
+{{- else -}}
+    {{- $ogTitle = .Page.Title -}}
+{{- end -}}
+
+{{- with .Params.featured_image -}}
+    {{- $ogImage = . | absURL -}}
+{{- else -}}
+    {{- $ogImage = $ogImage | absURL -}}
+{{- end -}}
+
+{{- with .Params.author_twitter_handle -}}
+    {{- $twitterCreator = . -}}
+{{- end -}}
+
+{{- with site.Params.opengraph.twitter.card -}}
+    {{- $twitterCard = . -}}
+{{- end -}}
+
+<meta property="og:title" content="{{ $ogTitle }}">
+<meta property="og:description" content="{{ $ogDescription | plainify | truncate 160 }}">
+<meta property="og:type" content="{{ $ogType }}">
+<meta property="og:url" content="{{ .Permalink }}">
+{{- with $ogImage }}
+<meta property="og:image" content="{{ . }}">
+{{ end }}
+{{- with site.Params.author.name }}
+<meta property="og:article:author" content="{{ . }}">
+{{- end }} {{/* Adding article author */}}
+<meta property="og:site_name" content="{{ site.Title }}"> {{/* Adding site name */}}
+
+<meta name="twitter:card" content="{{ $twitterCard }}">
+<meta name="twitter:title" content="{{ $ogTitle }}">
+<meta name="twitter:description" content="{{ $ogDescription | plainify | truncate 160 }}">
+{{- with $ogImage }}
+<meta name="twitter:image" content="{{ . }}">
+{{ end }}
+{{- with $twitterCreator }}
+<meta name="twitter:creator" content="{{ . }}">
+{{ end }}
+{{- with site.Params.Twitter_Site }}
+<meta name="twitter:site" content="{{ . }}">
+{{ end }}
+
+{{/* RSS Feed Link */}}
+{{ range .AlternativeOutputFormats -}}
+    <link rel="{{ .Rel }}" type="{{ .MediaType.Type }}" href="{{ .Permalink | safeURL }}">
+{{ end -}}
+
+{{/* Include other head elements from theme if needed, or Hugo's internal templates */}}
+{{- template "_internal/google_analytics.html" . -}} {{/* Example: Include GA */}}
+{{- partial "head/custom.html" . -}} {{/* Allow for custom additions */}} 

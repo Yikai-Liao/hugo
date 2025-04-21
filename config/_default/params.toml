@@ -3,6 +3,9 @@ mainSections = ["post"]
 # Output page's full content in RSS.
 rssFullContent = true
 favicon = "/favicon.png"
+description = "Yikai Liao's Tech Blog, Exploring Programming, AI and Life. You could find my thoughts here and enjoy it!"
+# image = "/images/default-social-card.png"
+# Twitter_Site = "@YourTwitterHandle"
 
 [footer]
 since = 2020
