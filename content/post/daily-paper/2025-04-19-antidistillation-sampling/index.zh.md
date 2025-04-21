@@ -1,16 +1,16 @@
 ---
 title: "每日论文：反蒸馏采样"
 description: "本文提出反蒸馏采样方法，通过在生成时毒化大语言模型的推理轨迹来干扰模型蒸馏，同时保持原始模型性能。"
-slug: 2025-04-antidistillation-sampling # Updated slug with date (must match English version)
-date: 2025-04-18 00:00:00+0000
+slug: "2025-04-antidistillation-sampling"
+date: "2025-04-19 00:00:00+0000"
 categories:
-    - Daily Paper
+    - "Daily Paper"
 tags:
-    - AI
-    - LLM
-    - 模型蒸馏
-    - 采样
-    - 安全
+    - "AI"
+    - "LLM"
+    - "模型蒸馏"
+    - "采样"
+    - "安全"
 ---
 
 **论文:** [Antidistillation Sampling](https://arxiv.org/abs/2504.13146)

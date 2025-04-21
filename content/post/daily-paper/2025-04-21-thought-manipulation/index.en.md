@@ -1,16 +1,16 @@
 ---
 title: "Daily Paper: Thought Manipulation"
 description: "Proposes ThoughtMani, a training-free method to reduce redundant reasoning in large reasoning models by leveraging external chain-of-thought from smaller models, improving efficiency and safety."
-slug: 2025-04-thought-manipulation
-date: 2025-04-18 00:00:00+0000
+slug: "2025-04-thought-manipulation"
+date: "2025-04-18 00:00:00+0000"
 categories:
-    - Daily Paper
+    - "Daily Paper"
 tags:
-    - AI
-    - LLM
-    - Reasoning
-    - CoT
-    - Efficiency
+    - "AI"
+    - "LLM"
+    - "Reasoning"
+    - "CoT"
+    - "Efficiency"
 ---
 **Paper:** [Thought Manipulation: External Thought Can Be Efficient for Large Reasoning Models](https://arxiv.org/abs/2504.13626)
 

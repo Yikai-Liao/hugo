@@ -1,16 +1,16 @@
 ---
 title: "每日论文：思维操纵"
 description: "本文提出 ThoughtMani，一种无需训练的方法，通过利用小模型生成的链式思维（CoT）减少大型推理模型的冗余推理，提升效率和安全性。"
-slug: 2025-04-thought-manipulation
-date: 2025-04-18 00:00:00+0000
+slug: "2025-04-thought-manipulation"
+date: "2025-04-21 00:00:00+0000"
 categories:
-    - Daily Paper
+    - "Daily Paper"
 tags:
-    - AI
-    - LLM
-    - 推理
-    - 思维链
-    - 效率
+    - "AI"
+    - "LLM"
+    - "推理"
+    - "思维链"
+    - "效率"
 ---
 
 **论文:** [Thought Manipulation: External Thought Can Be Efficient for Large Reasoning Models](https://arxiv.org/abs/2504.13626)
@@ -23,7 +23,7 @@ tags:
 
 ## 问题背景
 
-大型推理模型（LRMs）通过生成逐步的链式思维（CoT）在复杂任务中表现出色。然而，它们常因“过度思考”生成冗余推理步骤，导致计算成本增加而性能提升有限。现有的解决方案，如微调，需要额外数据，可能导致安全对齐问题，且泛化能力差。
+大型推理模型（LRMs）通过生成逐步的链式思维（CoT）在复杂任务中表现出色。然而，它们常因"过度思考"生成冗余推理步骤，导致计算成本增加而性能提升有限。现有的解决方案，如微调，需要额外数据，可能导致安全对齐问题，且泛化能力差。
 
 ## 提出方法：ThoughtMani
 
