@@ -1,16 +1,16 @@
 ---
 title: "Daily Paper: Antidistillation Sampling"
 description: "Proposes Antidistillation Sampling, a method to poison LLM reasoning traces during generation, hindering model distillation while preserving the original model's performance."
-slug: 2025-04-antidistillation-sampling
-date: 2025-04-18 00:00:00+0000
+slug: "2025-04-antidistillation-sampling"
+date: "2025-04-18 00:00:00+0000"
 categories:
-    - Daily Paper
+    - "Daily Paper"
 tags:
-    - AI
-    - LLM
-    - Model Distillation
-    - Sampling
-    - Security
+    - "AI"
+    - "LLM"
+    - "Model Distillation"
+    - "Sampling"
+    - "Security"
 ---
 **Paper:** [Antidistillation Sampling](https://arxiv.org/abs/2504.13146)
 
