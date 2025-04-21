@@ -41,146 +41,46 @@ html[data-scheme="dark"] .page__content {
 }
 </style>
 
-<article class="page">
-    <header class="page__header">
-        <h1 class="page__title">{{ .Title }}</h1>
+<article class="page-container" itemscope itemtype="http://schema.org/WebPage">
+    <header class="page-header">
+        <h1 class="page-title" itemprop="name">
+            {{ .Title }}
+        </h1>
+        {{- with .Params.summary }}
+        <p class="page-description" itemprop="description">{{ . }}</p>
+        {{- end }}
     </header>
-    <div class="page__content">
-        {{ .Content }}
 
-        {{/* --- AI Search Form based on theme's search.html --- */}}
-        <form class="search-form">
-            <p>
-                <label>{{ T "aiSearch" }}</label>
-                <input id="ai-search-input" name="keyword" placeholder="{{ T `searchPlaceholder` }}" />
-            </p>
-            <button type="button" id="ai-search-button" title="{{ T `search` }}">
-                 {{ partial "helper/icon" "search" }}
+    <section class="page-content">
+        <form id="ai-search-form" class="search-form" action="#" method="post" autocomplete="off" {{ with .OutputFormats.Get "json" -}}data-json="{{ .RelPermalink }}"{{- end }}>
+            <label for="ai-search-input" class="sr-only">Search</label>
+            <input type="search" id="ai-search-input" class="search-input" name="q" placeholder="{{ .Params.placeholder | default "Search..." }}" required>
+            <button type="submit" class="search-button" aria-label="Search">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-search">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
             </button>
         </form>
-        {{/* --- End AI Search Form --- */}}
 
-        {{/* --- AI Search Results Area --- */}}
-        <div class="search-result">
-            <div id="ai-search-loading" style="display: none; margin-top: 20px;">Loading...</div>
-            <div id="ai-search-error" style="display: none; margin-top: 20px; color: red;"></div>
-            {{/* Title will be dynamically added if needed, or keep static */}}
-            {{/* <h3 class="search-result--title section-title">Search Results</h3> */}}
-            <div class="search-result--list article-list--compact" style="margin-top: 20px;">
-                 <ul id="ai-search-results" style="list-style: none; padding: 0;"></ul>
-            </div>
+        <!-- Container for Keyword Results -->
+        <div class="search-results-section">
+            <h2>关键词匹配结果</h2>
+            <ul id="keyword-search-results" class="search-results keyword-results"></ul>
         </div>
-        {{/* --- End AI Search Results Area --- */}}
-    </div>
+
+        <!-- Container for AI Semantic Results -->
+        <div class="search-results-section">
+            <h2>智能匹配结果</h2>
+            <div id="ai-search-loading" class="search-loading" style="display: none;">正在智能搜索中...</div>
+            <div id="ai-search-error" class="search-error" style="display: none;"></div>
+            <ul id="ai-search-results" class="search-results ai-results" aria-live="polite"></ul>
+        </div>
+    </section>
+
+    {{/* Include the JS file specific to AI search */}}
+    {{ $script := resources.Get "js/ai-search.js" | resources.Minify | resources.Fingerprint }}
+    <script src="{{ $script.Permalink }}" defer></script>
+
 </article>
-
-<script>
-    // Existing JavaScript for Bonsai API interaction remains the same
-    const searchInput = document.getElementById('ai-search-input');
-    const searchButton = document.getElementById('ai-search-button');
-    const resultsContainer = document.getElementById('ai-search-results');
-    const loadingIndicator = document.getElementById('ai-search-loading');
-    const errorContainer = document.getElementById('ai-search-error');
-
-    // WARNING: Embedding credentials directly in client-side JS is insecure!
-    const bonsaiUrl = 'https://nanyang-technologica-1691025251.ap-southeast-2.bonsaisearch.net:443';
-    const bonsaiIndex = 'hugo';
-    const bonsaiUser = 'xwYPu5rSdh';
-    const bonsaiPass = 'vTHEksc2UyLuiJ7ZQm';
-    const searchEndpoint = `${bonsaiUrl}/${bonsaiIndex}/_search`;
-    const basicAuth = 'Basic ' + btoa(bonsaiUser + ':' + bonsaiPass);
-
-    const performSearch = async () => {
-        const query = searchInput.value.trim();
-        if (!query) {
-            resultsContainer.innerHTML = '';
-            errorContainer.style.display = 'none';
-            return;
-        }
-        loadingIndicator.style.display = 'block';
-        resultsContainer.innerHTML = '';
-        errorContainer.style.display = 'none';
-        const esQuery = {
-            "query": {
-                "multi_match": {
-                    "query": query,
-                    "fields": ["title^3", "content", "tags", "categories"],
-                    "fuzziness": "AUTO"
-                }
-            },
-            "size": 10
-        };
-        try {
-            const response = await fetch(searchEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Authorization': basicAuth,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(esQuery)
-            });
-            loadingIndicator.style.display = 'none';
-            if (!response.ok) {
-                let errorMsg = `Search failed: ${response.status} ${response.statusText}`;
-                try {
-                    const errorData = await response.json();
-                    console.error('Bonsai Search Error:', errorData);
-                    errorMsg += ` - ${errorData.error?.reason || JSON.stringify(errorData)}`;
-                } catch (e) {
-                    console.error('Failed to parse error response as JSON');
-                }
-                 throw new Error(errorMsg);
-            }
-            const data = await response.json();
-            displayResults(data.hits.hits);
-        } catch (error) {
-            console.error('Fetch Error:', error);
-            loadingIndicator.style.display = 'none';
-            errorContainer.textContent = `{{ T "searchError" }}: ${error.message}`;
-            errorContainer.style.display = 'block';
-        }
-    };
-    const displayResults = (hits) => {
-        resultsContainer.innerHTML = '';
-        if (!hits || hits.length === 0) {
-            resultsContainer.innerHTML = `<li>{{ T "noResults" }}</li>`;
-            return;
-        }
-        hits.forEach(hit => {
-            const source = hit._source;
-            const li = document.createElement('li');
-            li.style.marginBottom = '15px';
-            li.style.borderBottom = '1px solid #eee';
-            li.style.paddingBottom = '10px';
-            const titleLink = document.createElement('a');
-            titleLink.href = source.uri;
-            titleLink.textContent = source.title || 'No Title';
-            titleLink.style.fontWeight = 'bold';
-            titleLink.style.fontSize = '1.1em';
-            const dateSpan = document.createElement('span');
-            dateSpan.textContent = source.date ? ` (${source.date})` : '';
-            dateSpan.style.fontSize = '0.9em';
-            dateSpan.style.color = '#666';
-            dateSpan.style.marginLeft = '5px';
-            const contentP = document.createElement('p');
-            let contentPreview = 'No content available';
-            if (source.content) {
-                 contentPreview = source.content.substring(0, 150) + (source.content.length > 150 ? '...' : '');
-            }
-            contentP.textContent = contentPreview;
-            contentP.style.fontSize = '0.95em';
-            contentP.style.marginTop = '5px';
-            li.appendChild(titleLink);
-            li.appendChild(dateSpan);
-            li.appendChild(contentP);
-            resultsContainer.appendChild(li);
-        });
-    };
-    searchButton.addEventListener('click', performSearch);
-    searchInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            performSearch();
-        }
-    });
-</script>
-{{ end }} 
+{{ end }}

@@ -1,0 +1,25 @@
+name = "hugo-ai-search-worker" # Replace with your desired worker name
+main = "functions/ai-search.js" # Entry point for the worker
+compatibility_date = "2024-04-05" # Use a recent compatibility date
+
+# Bindings allow your Worker to interact with other Cloudflare resources
+
+# Vectorize binding (replace YOUR_VECTORIZE_INDEX_NAME)
+[[vectorize]]
+binding = "VECTORIZE_INDEX" # Name to use in Worker code
+index_name = "hugo-semantic-search" # Updated to the correct index name
+
+# Workers AI binding for built-in embedding models
+[ai]
+binding = "AI"
+
+# Environment variables (optional, for external embedding APIs)
+# You'll need to set these secrets using `wrangler secret put VAR_NAME`
+# [vars]
+# VOYAGE_API_KEY = "your_voyage_api_key_secret" # Example
+# OPENAI_API_KEY = "your_openai_api_key_secret" # Example
+
+# Build configuration (optional, if you have build steps)
+# [build]
+# command = "npm run build"
+# watch_dir = "src" 

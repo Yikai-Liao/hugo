@@ -15,6 +15,15 @@ weight = 2
 [main.params]
 icon = "search"
 
+# Add AI Search menu item
+[[main]]
+identifier = "ai-search"
+name = "AI Search"
+url = "/ai-search/" # Points to the new AI Search page
+weight = 2.5 # Position it after Search
+[main.params]
+icon = "search"
+
 [[main]]
 identifier = "ai-search"
 name = "AI Search"

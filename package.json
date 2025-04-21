@@ -1,0 +1,23 @@
+{
+  "name": "hugo-ai-search",
+  "version": "1.0.0",
+  "description": "Hugo AI Search implementation",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build:index": "node scripts/build-vector-index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hugo",
+    "cloudflare",
+    "vectorize",
+    "ai",
+    "search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}

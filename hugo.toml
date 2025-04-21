@@ -1,0 +1,11 @@
+# Hugo Configuration File
+
+# --- Proxy config below is commented out as we are calling worker directly from JS now ---
+# [server]
+#   # --- Local Development Proxy for AI Search Worker ---
+#   [[proxy]]
+#   # Source path on your local server
+#   from = "/api/ai-search"
+#   # Target URL for testing
+#   to = "https://httpbin.org/post"
+#   # --- End Proxy Configuration --- 

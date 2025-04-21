@@ -1,0 +1,23 @@
+{{- $allChunks := slice -}}
+{{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections | default site.RegularPages -}}
+{{- range $index, $page := $pages -}}
+  {{- $cleanedContent := $page.Plain | replaceRE `\s+` ` ` -}}
+  {{- $content := trim $cleanedContent " \n\r\t" -}} {{- /* Basic cleaning */ -}}
+  {{- $paragraphs := $content | findRE `[^\n\r]+(?:\r\n|\r|\n){1,}[^\n\r]+|[^\n\r]+` -}} {{- /* Split by one or more newlines, attempting to capture paragraphs */ -}}
+  {{- if not $paragraphs }}{{- $paragraphs = slice $content }}{{- end -}} {{- /* Handle single-paragraph content */ -}}
+  {{- range $chunkIndex, $paragraph := $paragraphs -}}
+    {{- $trimmedParagraph := trim $paragraph " \n\r\t" -}} {{- /* Trim whitespace from each paragraph */ -}}
+    {{- if gt (len $trimmedParagraph) 50 -}} {{- /* Only index chunks with meaningful length (e.g., > 50 chars) */ -}}
+      {{- $chunkHtmlId := printf "%s-chunk-%d" ($page.File.UniqueID | default (printf "page%d" $index)) $chunkIndex -}} {{- /* Generate a stable-ish ID based on file UniqueID or page index */ -}}
+      {{- $chunk := dict
+          "chunk_id" $chunkHtmlId
+          "article_title" $page.Title
+          "article_url" $page.Permalink
+          "chunk_text" $trimmedParagraph
+          "chunk_html_id" $chunkHtmlId
+      -}}
+      {{- $allChunks = $allChunks | append $chunk -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $allChunks | jsonify (dict "indent" "  ") -}} 
