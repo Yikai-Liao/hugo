@@ -213,32 +213,48 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       path = link;
     }
+    // 去除锚点、参数、末尾斜杠
     return path.replace(/[#?].*$/, '').replace(/\/$/, '');
   }
 
   function mergeAndDisplayResults() {
     const aiResults = aiResultsGlobal || [];
     const keywordResults = keywordResultsGlobal || [];
-    const keywordMap = new Map();
+    const mergedMap = new Map();
+
+    console.log('AI Results:', aiResults);
+    console.log('Keyword Results:', keywordResults);
+
+    // 先放规则检索，isAIOnly: false
     keywordResults.forEach(item => {
-      keywordMap.set(getResultKey(item), item);
+      const key = getResultKey(item);
+      mergedMap.set(key, { ...item, isAIOnly: false });
     });
-    const merged = [];
-    const usedKeys = new Set();
+
+    // 再遍历AI检索
     aiResults.forEach(aiItem => {
       const key = getResultKey(aiItem);
-      if (keywordMap.has(key)) {
-        merged.push({ ...keywordMap.get(key) });
-        keywordMap.delete(key);
+      if (mergedMap.has(key)) {
+        // 合并时优先保留规则检索的高亮内容
+        mergedMap.set(key, { ...aiItem, ...mergedMap.get(key), isAIOnly: false });
       } else if (key) {
-        merged.push(aiItem);
+        mergedMap.set(key, { ...aiItem, isAIOnly: true });
       }
-      usedKeys.add(key);
     });
-    // 补充规则独有的
-    keywordMap.forEach((item, key) => {
-      if (!usedKeys.has(key)) merged.push(item);
+
+    // 保持AI检索顺序优先，规则独有的补在后面
+    const aiKeys = aiResults.map(getResultKey);
+    const merged = [];
+    aiKeys.forEach(key => {
+      if (mergedMap.has(key)) {
+        merged.push(mergedMap.get(key));
+        mergedMap.delete(key);
+      }
     });
+    // 补充规则独有
+    mergedMap.forEach(item => merged.push(item));
+
+    console.log('Merged Results:', merged);
     displayUnifiedResults(merged);
   }
 
@@ -251,6 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const fragment = document.createDocumentFragment();
     results.forEach(result => {
+      console.log('Render:', getResultKey(result), result.isAIOnly, result);
+      if (result.isAIOnly) {
+        console.log('AI-only to render:', result);
+      }
       const li = document.createElement('li');
       li.className = 'search-result-item article-list--compact__item';
       const a = document.createElement('a');
@@ -265,8 +285,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         titleSpan.textContent = result.title;
       }
+      // AI-only结果加脑图标（先设置内容再插入图标，避免被覆盖）
+      if (result.isAIOnly) {
+        const brainIcon = document.createElement('img');
+        brainIcon.src = '/icons/brain.svg';
+        brainIcon.alt = 'AI';
+        brainIcon.className = 'ai-brain-icon';
+        titleSpan.prepend(brainIcon);
+      }
       a.appendChild(titleSpan);
-      // 不再显示相关度分数
       // 摘要/预览
       const p = document.createElement('p');
       p.className = 'article-list--compact__summary';

@@ -24,13 +24,6 @@ weight = 2.5 # Position it after Search
 [main.params]
 icon = "search"
 
-[[main]]
-identifier = "ai-search"
-name = "AI Search"
-url = "/ai-search"
-weight = 2
-[main.params]
-icon = "brain"
 
 [[main]]
 identifier = "archives"
