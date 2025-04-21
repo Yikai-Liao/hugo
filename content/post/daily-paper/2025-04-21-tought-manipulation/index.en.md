@@ -9,6 +9,7 @@ tags:
     - AI
     - LLM
     - Reasoning
+    - CoT
     - Efficiency
 ---
 **Paper:** [Thought Manipulation: External Thought Can Be Efficient for Large Reasoning Models](https://arxiv.org/abs/2504.13626)
