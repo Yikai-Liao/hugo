@@ -1,12 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   const searchForm = document.getElementById('ai-search-form');
   const searchInput = document.getElementById('ai-search-input');
-  const keywordResultsContainer = document.getElementById('keyword-search-results');
-  const aiResultsContainer = document.getElementById('ai-search-results');
+  const unifiedResultsContainer = document.getElementById('search-results');
   const loadingIndicator = document.getElementById('ai-search-loading');
   const errorContainer = document.getElementById('ai-search-error');
-  const keywordResultTitle = document.querySelector('#keyword-search-results')?.previousElementSibling; // Assumes H2 precedes UL
-  const aiResultTitle = document.querySelector('#ai-search-results')?.previousElementSibling;      // Assumes H2 precedes UL
 
   // const aiWorkerUrl = '/api/ai-search'; // Original relative path
   const aiWorkerUrl = 'https://hugo-ai-search-worker.lyk-boya.workers.dev/api/ai-search'; // Use absolute URL
@@ -18,12 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const parser = new DOMParser();
   // --- End Keyword Search Specific ---
 
-  if (!searchForm || !searchInput || !aiResultsContainer || !loadingIndicator || !errorContainer) {
+  if (!searchForm || !searchInput || !unifiedResultsContainer || !loadingIndicator || !errorContainer) {
     console.error('Core Search UI elements not found.');
     return;
-  }
-  if (!keywordResultsContainer) {
-    console.warn('Keyword results container (#keyword-search-results) not found.');
   }
   if (!keywordJsonURL) {
       console.warn('Keyword search data URL (data-json attribute on form) not found.');
@@ -198,161 +192,170 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
 
+  // --- 融合检索逻辑 ---
+  let aiResultsGlobal = null;
+  let keywordResultsGlobal = null;
+  let aiDone = false;
+  let keywordDone = false;
+
+  // 统一获取结果 key（优先 permalink，否则 anchor_link，取 path，去除锚点、参数、末尾斜杠）
+  function getResultKey(item) {
+    const link = item.permalink || item.anchor_link || '';
+    let path = link;
+    try {
+      if (link.startsWith('http')) {
+        path = new URL(link).pathname;
+      } else if (link.startsWith('//')) {
+        path = new URL('http:' + link).pathname;
+      } else if (link.startsWith('/')) {
+        path = link;
+      }
+    } catch (e) {
+      path = link;
+    }
+    return path.replace(/[#?].*$/, '').replace(/\/$/, '');
+  }
+
+  function mergeAndDisplayResults() {
+    const aiResults = aiResultsGlobal || [];
+    const keywordResults = keywordResultsGlobal || [];
+    const keywordMap = new Map();
+    keywordResults.forEach(item => {
+      keywordMap.set(getResultKey(item), item);
+    });
+    const merged = [];
+    const usedKeys = new Set();
+    aiResults.forEach(aiItem => {
+      const key = getResultKey(aiItem);
+      if (keywordMap.has(key)) {
+        merged.push({ ...keywordMap.get(key) });
+        keywordMap.delete(key);
+      } else if (key) {
+        merged.push(aiItem);
+      }
+      usedKeys.add(key);
+    });
+    // 补充规则独有的
+    keywordMap.forEach((item, key) => {
+      if (!usedKeys.has(key)) merged.push(item);
+    });
+    displayUnifiedResults(merged);
+  }
+
+  function displayUnifiedResults(results) {
+    if (!unifiedResultsContainer) return;
+    unifiedResultsContainer.innerHTML = '';
+    if (!results || results.length === 0) {
+      unifiedResultsContainer.innerHTML = '<li>无相关结果。</li>';
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    results.forEach(result => {
+      const li = document.createElement('li');
+      li.className = 'search-result-item article-list--compact__item';
+      const a = document.createElement('a');
+      a.href = result.permalink || result.anchor_link;
+      a.className = 'article-list--compact__link';
+      // 标题
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'article-list--compact__title';
+      // 规则检索有高亮，AI无
+      if (result.title && result.title.includes('<mark>')) {
+        titleSpan.innerHTML = result.title;
+      } else {
+        titleSpan.textContent = result.title;
+      }
+      a.appendChild(titleSpan);
+      // 不再显示相关度分数
+      // 摘要/预览
+      const p = document.createElement('p');
+      p.className = 'article-list--compact__summary';
+      if (result.preview && result.preview.includes('<mark>')) {
+        p.innerHTML = result.preview;
+      } else if (result.preview) {
+        p.textContent = result.preview;
+      } else if (result.content) {
+        p.textContent = result.content.substring(0, 140);
+      }
+      li.appendChild(a);
+      li.appendChild(p);
+      fragment.appendChild(li);
+    });
+    unifiedResultsContainer.appendChild(fragment);
+  }
+
+  // --- 重写表单提交逻辑 ---
   searchForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const query = searchInput.value.trim();
-
-    // Clear previous states
-    if (keywordResultsContainer) keywordResultsContainer.innerHTML = '';
-    if (keywordResultTitle) keywordResultTitle.textContent = ''; // Clear title
-    aiResultsContainer.innerHTML = '';
-    if (aiResultTitle) aiResultTitle.textContent = ''; // Clear title
+    // 清空状态
+    unifiedResultsContainer.innerHTML = '';
     errorContainer.textContent = '';
     errorContainer.style.display = 'none';
     loadingIndicator.style.display = 'none';
-
-    if (!query) {
-      return;
-    }
-
-    const queryTerms = query.split(/\s+/); // Split query into terms for keyword search
-
-    // --- 1. Execute Keyword Search (Client-side) ---
-    if (keywordResultsContainer && keywordJsonURL) { // Only run if container and URL exist
-        console.log("Executing keyword search...");
-        const startTime = performance.now();
-        searchKeywords(queryTerms)
-            .then(keywordResults => {
-                const endTime = performance.now();
-                console.log(`Keyword search completed in ${((endTime - startTime) / 1000).toFixed(2)}s`);
-                displayKeywordResults(keywordResults);
-            })
-            .catch(err => {
-                // Error already logged in searchKeywords
-                displayKeywordResults([]); // Display empty state on error
-            });
-    }
-    // ---
-
-    // --- 2. Execute AI Semantic Search (Server-side via Worker) ---
-    console.log("Initiating AI semantic search...");
-
-    // Determine current language from HTML tag
-    const currentLang = document.documentElement.lang || 'en'; // Default to 'en' if lang attr missing
-    const urlWithLang = `${aiWorkerUrl}?lang=${currentLang}`; // Add missing semicolon
-
-    console.log(`Targeting Worker URL: ${urlWithLang}`);
-
-    if (aiResultTitle) aiResultTitle.textContent = '智能匹配结果'; // Set title early
-    loadingIndicator.style.display = 'block';
-    aiResultsContainer.innerHTML = '';
-
-    fetch(urlWithLang, { // Use the URL with language parameter
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: query }),
-    })
-    .then(async response => {
-        if (!response.ok) {
-            let errorMsg = `AI Search failed (${response.status})`;
-            try {
-                const errorData = await response.json();
-                errorMsg += `: ${errorData.error || errorData.details || 'Unknown worker error'}`;
-            } catch (e) { /* Ignore */ }
-            throw new Error(errorMsg);
+    aiResultsGlobal = null;
+    keywordResultsGlobal = null;
+    aiDone = false;
+    keywordDone = false;
+    if (!query) return;
+    const queryTerms = query.split(/\s+/);
+    // 规则检索
+    (async () => {
+      try {
+        const keywordResults = await searchKeywords(queryTerms);
+        keywordResultsGlobal = keywordResults;
+        keywordDone = true;
+        if (aiDone) {
+          mergeAndDisplayResults();
+        } else {
+          displayUnifiedResults(keywordResults);
         }
-        return response.json();
-    })
-    .then(aiResults => {
-        console.log("AI search completed.");
-        displayAiResults(aiResults);
-    })
-    .catch(error => {
-        console.error('AI Search fetch error:', error);
+      } catch (err) {
+        keywordResultsGlobal = [];
+        keywordDone = true;
+        if (aiDone) {
+          mergeAndDisplayResults();
+        }
+      }
+    })();
+    // AI 检索
+    (async () => {
+      try {
+        loadingIndicator.style.display = 'block';
+        const currentLang = document.documentElement.lang || 'en';
+        const urlWithLang = `${aiWorkerUrl}?lang=${currentLang}`;
+        const response = await fetch(urlWithLang, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query }),
+        });
+        if (!response.ok) {
+          let errorMsg = `AI Search failed (${response.status})`;
+          try {
+            const errorData = await response.json();
+            errorMsg += `: ${errorData.error || errorData.details || 'Unknown worker error'}`;
+          } catch (e) { /* Ignore */ }
+          throw new Error(errorMsg);
+        }
+        const aiResults = await response.json();
+        aiResultsGlobal = aiResults;
+        aiDone = true;
+        loadingIndicator.style.display = 'none';
+        if (keywordDone) {
+          mergeAndDisplayResults();
+        } else {
+          displayUnifiedResults(aiResults);
+        }
+      } catch (error) {
+        aiResultsGlobal = [];
+        aiDone = true;
+        loadingIndicator.style.display = 'none';
         errorContainer.textContent = `AI Search Error: ${error.message}.`;
         errorContainer.style.display = 'block';
-        aiResultsContainer.innerHTML = '';
-    })
-    .finally(() => {
-        loadingIndicator.style.display = 'none';
-    });
-    // ---
+        if (keywordDone) {
+          mergeAndDisplayResults();
+        }
+      }
+    })();
   });
-
-  // --- Result Display Functions ---
-  function displayKeywordResults(results) {
-    console.log("Displaying Keyword Results:", results); // DEBUG: Log received results
-    if (!keywordResultsContainer) return;
-    if (keywordResultTitle) keywordResultTitle.textContent = `关键词匹配结果 (${results.length})`;
-
-    if (!results || results.length === 0) {
-      keywordResultsContainer.innerHTML = '<li>无关键词匹配结果。</li>';
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    results.forEach(result => {
-      const li = document.createElement('li');
-      li.className = 'keyword-result-item article-list--compact__item'; // Use theme class
-
-      const a = document.createElement('a');
-      a.href = result.permalink;
-      a.className = 'article-list--compact__link'; // Use theme class
-      
-      // Create title element and set innerHTML to allow <mark>
-      const titleSpan = document.createElement('span');
-      titleSpan.className = 'article-list--compact__title';
-      titleSpan.innerHTML = result.title; // Title already has <mark>
-      a.appendChild(titleSpan);
-
-      // Create preview element and set innerHTML
-      const p = document.createElement('p');
-      p.className = 'article-list--compact__summary'; // Use theme class
-      p.innerHTML = result.preview; // Preview already has <mark> and [...] 
-
-      li.appendChild(a);
-      li.appendChild(p);
-      fragment.appendChild(li);
-    });
-    keywordResultsContainer.appendChild(fragment);
-  }
-
-  function displayAiResults(results) {
-    if (aiResultTitle) aiResultTitle.textContent = `智能匹配结果 (${results.length})`;
-    
-    if (!results || results.length === 0) {
-      aiResultsContainer.innerHTML = '<li>无相关段落。</li>';
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    results.forEach(result => {
-      const li = document.createElement('li');
-      li.className = 'ai-result-item article-list--compact__item'; // Use similar theme class
-
-      const a = document.createElement('a');
-      a.href = result.anchor_link;
-      a.className = 'article-list--compact__link';
-      
-      const titleSpan = document.createElement('span');
-      titleSpan.className = 'article-list--compact__title';
-      titleSpan.textContent = result.title;
-      a.appendChild(titleSpan);
-
-      const scoreSpan = document.createElement('span');
-      scoreSpan.className = 'ai-result-score'; // Keep specific class for score
-      scoreSpan.textContent = ` (相关度: ${result.score.toFixed(3)})`;
-      a.appendChild(scoreSpan);
-
-      const p = document.createElement('p');
-      p.className = 'article-list--compact__summary';
-      p.textContent = result.preview ? `...${escapeHTML(result.preview)}...` : ''; // Escape preview
-
-      li.appendChild(a);
-      li.appendChild(p);
-      fragment.appendChild(li);
-    });
-    aiResultsContainer.appendChild(fragment);
-  }
-  // ---
 });

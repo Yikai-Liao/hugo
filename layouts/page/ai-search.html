@@ -112,18 +112,11 @@ html[data-scheme="dark"] .search-error {
             </button>
         </form>
 
-        <!-- Container for Keyword Results -->
+        <!-- Container for Unified Search Results -->
         <div class="search-results-section">
-            <h2>关键词匹配结果</h2>
-            <ul id="keyword-search-results" class="search-results keyword-results"></ul>
-        </div>
-
-        <!-- Container for AI Semantic Results -->
-        <div class="search-results-section">
-            <h2>智能匹配结果</h2>
             <div id="ai-search-loading" class="search-loading" style="display: none;">正在智能搜索中...</div>
             <div id="ai-search-error" class="search-error" style="display: none;"></div>
-            <ul id="ai-search-results" class="search-results ai-results" aria-live="polite"></ul>
+            <ul id="search-results" class="search-results" aria-live="polite"></ul>
         </div>
     </section>
 
