@@ -287,10 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // AI-only结果加脑图标（先设置内容再插入图标，避免被覆盖）
       if (result.isAIOnly) {
+        const base = document.querySelector('base')?.href || '/';
         const brainIcon = document.createElement('img');
-        brainIcon.src = '/icons/brain.svg';
-        brainIcon.alt = 'AI';
         brainIcon.className = 'ai-brain-icon';
+        brainIcon.alt = 'AI';
+        brainIcon.src = base.replace(/\/$/, '') + '/icons/brain.svg';
         titleSpan.prepend(brainIcon);
       }
       a.appendChild(titleSpan);
