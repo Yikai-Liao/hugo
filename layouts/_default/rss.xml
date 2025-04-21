@@ -1,0 +1,47 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ if eq  .Title  site.Title }}{{ site.Title }}{{ else }}{{ with .Title }}{{.}} on {{ end }}{{ site.Title }}{{ end }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>Recent content {{ if ne  .Title  site.Title }}{{ with .Title }}in {{.}} {{ end }}{{ end }}on {{ site.Title }}</description>
+    <generator>Hugo -- gohugo.io</generator>{{ with site.Language.Lang }}
+    <language>{{.}}</language>{{end}}{{ with site.Params.author.email }}
+    <managingEditor>{{.}}{{ with site.Params.author.name }} ({{.}}){{end}}</managingEditor>{{end}}{{ with site.Params.author.email }}
+    <webMaster>{{.}}{{ with site.Params.author.name }} ({{.}}){{end}}</webMaster>{{end}}{{ with site.Copyright }}
+    <copyright>{{.}}</copyright>{{end}}{{ if not .Date.IsZero }}
+    <lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ else }}
+    <lastBuildDate>{{ now.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>{{ end }}
+    {{ with .OutputFormats.Get "RSS" }}
+        {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}
+    {{ end }}
+    {{ $pages := site.RegularPages }}
+    {{ $mainSections := site.Params.mainSections | default (slice "post") }}
+    {{ $pages = where $pages "Section" "in" $mainSections }}
+    {{ range $pages.ByDate.Reverse }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      {{ with site.Params.author.email }}<author>{{.}}{{ with site.Params.author.name }} ({{.}}){{end}}</author>{{end}}
+      <guid>{{ .Permalink }}</guid>
+
+      {{/* Get description and content directly */}}
+      {{ $desc := .Description }}
+      {{ $content := .Content }}
+
+      {{/* Combine description and content, adding <hr> if both exist */}}
+      {{ $combined := "" }}
+      {{ with $desc }}
+          {{ $combined = . }}
+      {{ end }}
+      {{ if and $desc $content }}
+          {{ $combined = printf "%s<hr>%s" $combined $content }}
+      {{ else if $content }}
+          {{ $combined = $content }}
+      {{ end }}
+
+      {{/* Output the combined content directly, escaping HTML for XML safety */}}
+      <description>{{ $combined | html }}</description> {{/* Removed htmlUnescape, rely only on final | html */}}
+    </item>
+    {{ end }}
+  </channel>
+</rss> 

@@ -13,5 +13,23 @@ hasCJKLanguage = true
 # Change it to your Disqus shortname before using
 disqusShortname = "hugo-theme-stack"
 
+# Copyright notice (used in RSS Feed)
+copyright = "© 2024 Your Name or Company Name" # Please update this
+
+[params.author]
+  name = "Your Name" # Please update this
+  email = "your.email@example.com" # Please update this
+
 [pagination]
 pagerSize = 5
+
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]
+  taxonomy = ["HTML"]
+  term = ["HTML"]
+
+[services]
+  [services.rss]
+    # Include all posts in RSS feed
+    limit = -1

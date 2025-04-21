@@ -43,6 +43,7 @@ icon = "link"
 identifier = "github"
 name = "GitHub"
 url = "https://github.com/Yikai-Liao"
+weight = 10
 
 [social.params]
 icon = "brand-github"
@@ -51,6 +52,7 @@ icon = "brand-github"
 identifier = "zhihu"
 name = "Zhihu"
 url = "https://www.zhihu.com/people/tai-shan-ye-zi"
+weight = 20
 
 [social.params]
 icon = "brand-zhihu"
@@ -62,3 +64,12 @@ icon = "brand-zhihu"
 
 # [social.params]
 # icon = "brand-twitter"
+
+[[social]]
+identifier = "rss"
+name = "RSS"
+url = "/index.xml"
+weight = 100
+
+[social.params]
+icon = "rss"
