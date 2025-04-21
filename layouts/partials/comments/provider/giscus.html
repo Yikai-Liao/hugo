@@ -4,13 +4,22 @@
     {{/* Use language from config, fallback to zh-CN */}}
     {{ $giscusLang := .lang | default "zh-CN" }}
 
+    {{/* --- MODIFICATION START --- */}}
+    {{/* Determine the term to use for mapping. Prioritize slug, fallback to title */}}
+    {{/* You can add $.Page.Params.giscus_term as a higher priority fallback if needed */}}
+    {{ $giscusTerm := $.Page.Slug | default $.Page.Title }} 
+    {{/* --- MODIFICATION END --- */}}
+
     <div class="giscus" id="giscus-comments"></div>
     <script src="https://giscus.app/client.js"
             data-repo="{{ .repo }}"
             data-repo-id="{{ .repoID }}"
             data-category="{{ .category }}"
             data-category-id="{{ .categoryID }}"
-            data-mapping="{{ .mapping | default "pathname" }}"
+            {{/* --- MODIFICATION START --- */}}
+            data-mapping="specific" {{/* Change mapping strategy to 'specific' */}}
+            data-term="{{ $giscusTerm }}" {{/* Add data-term attribute with the slug/title */}}
+            {{/* --- MODIFICATION END --- */}}
             data-strict="{{ .strict | default "0" }}"
             data-reactions-enabled="{{ .reactionsEnabled | default "1" }}"
             data-emit-metadata="{{ .emitMetadata | default "0" }}"
@@ -22,7 +31,7 @@
             async>
     </script>
 
-    {{/* Giscus theme switching script */}}
+    {{/* Giscus theme switching script (Keep this part as is) */}}
     <script>
         function setGiscusTheme(theme) {
             const iframe = document.querySelector("iframe.giscus-frame");
@@ -78,4 +87,4 @@
     </script>
     <noscript>Please enable JavaScript to view the comments powered by Giscus.</noscript>
   {{- end }}
-{{- end }} 
+{{- end }}
