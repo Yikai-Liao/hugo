@@ -1,0 +1,26 @@
+{{ define "main" }}
+    {{/* --- Get pages for current language and main sections --- */}}
+    {{ $pages := where .Pages "Type" "in" .Site.Params.mainSections }} 
+    {{ $notHidden := where $pages "Params.hidden" "!=" true }} {{/* Apply hidden filter to language-specific pages */}}
+    {{ $filtered := $notHidden }}
+
+    {{/* --- Paginate the UNsorted list first --- */}}
+    {{ $pag := .Paginate $filtered }} 
+
+    {{/* --- Sort the pages retrieved FROM the paginator --- */}}
+    {{ $sortedPaginatedPages := $pag.Pages.ByDate.Reverse }}
+
+    <section class="article-list">
+        {{/* --- Iterate over the finally sorted pages --- */}}
+        {{ range $index, $element := $sortedPaginatedPages }} 
+            {{ partial "article-list/default" . }}
+        {{ end }}
+    </section>
+
+    {{- partial "pagination.html" . -}} {{/* Pagination controls should still work correctly with $pag */}}
+    {{- partial "footer/footer" . -}}
+{{ end }}
+
+{{ define "right-sidebar" }}
+    {{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}
+{{ end }} 
