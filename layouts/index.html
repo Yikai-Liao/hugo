@@ -1,23 +1,25 @@
 {{ define "main" }}
-    {{/* --- Get pages for current language and main sections --- */}}
-    {{ $pages := where .Pages "Type" "in" .Site.Params.mainSections }} 
-    {{ $notHidden := where $pages "Params.hidden" "!=" true }} {{/* Apply hidden filter to language-specific pages */}}
-    {{ $filtered := $notHidden }}
+    {{/* --- Get all regular pages --- */}}
+    {{ $pages := .Site.RegularPages }}
+    {{ $notHidden := where $pages "Params.hidden" "!=" true }} {{/* Apply hidden filter */}}
 
-    {{/* --- Paginate the UNsorted list first --- */}}
-    {{ $pag := .Paginate $filtered }} 
+    {{/* --- Filter for pages in the 'post' section --- */}}
+    {{ $blogPosts := where $notHidden "Section" "eq" "post" }}
 
-    {{/* --- Sort the pages retrieved FROM the paginator --- */}}
-    {{ $sortedPaginatedPages := $pag.Pages.ByDate.Reverse }}
+    {{/* --- Sort the blog posts list --- */}}
+    {{ $sortedPages := $blogPosts.ByDate.Reverse }}
+
+    {{/* --- Paginate the SORTED list --- */}}
+    {{ $pag := .Paginate $sortedPages }}
 
     <section class="article-list">
-        {{/* --- Iterate over the finally sorted pages --- */}}
-        {{ range $index, $element := $sortedPaginatedPages }} 
+        {{/* --- Iterate over the paginator's pages (filtered and sorted) --- */}}
+        {{ range $pag.Pages }}
             {{ partial "article-list/default" . }}
         {{ end }}
     </section>
 
-    {{- partial "pagination.html" . -}} {{/* Pagination controls should still work correctly with $pag */}}
+    {{- partial "pagination.html" . -}} {{/* Pagination controls */}}
     {{- partial "footer/footer" . -}}
 {{ end }}
 
