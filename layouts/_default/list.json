@@ -2,11 +2,15 @@
 {{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections | default site.RegularPages -}}
 
 {{- range $index, $page := $pages -}}
+  {{- /* Use UniqueID if available, otherwise page index */ -}}
+  {{- $pageId := $page.File.UniqueID | default (printf "page%d" $index) -}}
   {{- $pageData := dict
-      "id" ($page.File.UniqueID | default (printf "page%d" $index))
+      "id" $pageId
       "title" $page.Title
       "url" $page.Permalink
+      "description" $page.Description
       "rawContent" $page.RawContent
+      "lang" $page.Lang
   -}}
   {{- $allPagesData = $allPagesData | append $pageData -}}
 {{- end -}}

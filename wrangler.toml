@@ -4,18 +4,33 @@ compatibility_date = "2024-04-05" # Use a recent compatibility date
 
 # Bindings allow your Worker to interact with other Cloudflare resources
 
-# Vectorize binding (replace YOUR_VECTORIZE_INDEX_NAME)
+# Remove old single binding
+# [[vectorize]]
+# binding = "VECTORIZE_INDEX"
+# index_name = "hugo-semantic-search"
+
+# Add language-specific Vectorize bindings
 [[vectorize]]
-binding = "VECTORIZE_INDEX" # Name to use in Worker code
-index_name = "hugo-semantic-search" # Updated to the correct index name
+binding = "VECTORIZE_INDEX_EN" # Binding name for English index in Worker code
+index_name = "hugo-semantic-search-en"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX_ZH" # Binding name for Chinese index in Worker code
+index_name = "hugo-semantic-search-zh"
 
 # Workers AI binding for built-in embedding models
 [ai]
 binding = "AI"
 
+# Environment variables for the Worker
+[vars]
+# Define a score threshold for filtering results
+# Matches with a score below this value will be discarded
+SCORE_THRESHOLD = 0.5
+
 # Environment variables (optional, for external embedding APIs)
 # You'll need to set these secrets using `wrangler secret put VAR_NAME`
-# [vars]
+# [vars] # This comment seems redundant now
 # VOYAGE_API_KEY = "your_voyage_api_key_secret" # Example
 # OPENAI_API_KEY = "your_openai_api_key_secret" # Example
 
