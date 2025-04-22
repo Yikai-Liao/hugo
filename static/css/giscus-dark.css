@@ -1,0 +1,62 @@
+/* Custom Giscus Dark Theme Styles - Based on Hugo Stack Theme */
+:root {
+  color-scheme: dark;
+
+  /* Syntax Highlighting (Best Guess Mapping) */
+  --color-prettylights-syntax-comment: rgba(255, 255, 255, 0.5); /* --card-text-color-tertiary */
+  --color-prettylights-syntax-constant: #bdc3c7; /* --accent-color-darker */
+  --color-prettylights-syntax-entity: #ecf0f1; /* --accent-color */
+  --color-prettylights-syntax-storage-modifier-import: rgba(255, 255, 255, 0.9); /* --card-text-color-main */
+  --color-prettylights-syntax-entity-tag: #bdc3c7; /* --accent-color-darker */
+  --color-prettylights-syntax-keyword: #ecf0f1; /* --accent-color */
+  --color-prettylights-syntax-string: rgba(255, 255, 255, 0.7); /* --body-text-color / --card-text-color-secondary */
+  --color-prettylights-syntax-variable: #bdc3c7; /* --accent-color-darker */
+  --color-prettylights-syntax-brackethighlighter-unmatched: #e74c3c; /* A guess for lighter red */
+  --color-prettylights-syntax-invalid-illegal-text: #fff;
+  --color-prettylights-syntax-invalid-illegal-bg: #e74c3c; /* A guess for lighter red */
+  --color-prettylights-syntax-carriage-return-text: #fff;
+  --color-prettylights-syntax-carriage-return-bg: #e74c3c; /* A guess for lighter red */
+  --color-prettylights-syntax-string-regexp: #2ecc71; /* A guess for lighter green */
+  --color-prettylights-syntax-markup-list: rgba(255, 255, 255, 0.7); /* --body-text-color */
+  --color-prettylights-syntax-markup-heading: #bdc3c7; /* --accent-color-darker */
+  --color-prettylights-syntax-markup-italic: rgba(255, 255, 255, 0.9); /* --card-text-color-main */
+  --color-prettylights-syntax-markup-bold: rgba(255, 255, 255, 0.9); /* --card-text-color-main */
+  --color-prettylights-syntax-markup-deleted-text: #e74c3c;
+  --color-prettylights-syntax-markup-deleted-bg: rgba(231, 76, 60, 0.2);
+  --color-prettylights-syntax-markup-inserted-text: #2ecc71;
+  --color-prettylights-syntax-markup-inserted-bg: rgba(46, 204, 113, 0.2);
+  --color-prettylights-syntax-markup-changed-text: #f1c40f; /* A guess for lighter orange/yellow */
+  --color-prettylights-syntax-markup-changed-bg: rgba(241, 196, 15, 0.2);
+  --color-prettylights-syntax-markup-ignored-text: #7f8c8d;
+  --color-prettylights-syntax-markup-ignored-bg: #bdc3c7;
+  --color-prettylights-syntax-meta-diff-range: #ecf0f1;
+  --color-prettylights-syntax-brackethighlighter-angle: rgba(255, 255, 255, 0.5); /* --card-text-color-tertiary */
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #7f8c8d;
+  --color-prettylights-syntax-constant-other-reference-link: #ecf0f1; /* --accent-color */
+
+  /* Core Colors */
+  --color-fg-default: rgba(255, 255, 255, 0.9); /* --card-text-color-main */
+  --color-fg-muted: rgba(255, 255, 255, 0.7); /* --card-text-color-secondary */
+  --color-fg-subtle: rgba(255, 255, 255, 0.5); /* --card-text-color-tertiary */
+  --color-canvas-default: #424242; /* --card-background */
+  --color-canvas-subtle: #303030; /* --body-background */
+  --color-border-default: rgba(255, 255, 255, 0.12); /* --card-separator-color */
+  --color-border-muted: rgba(255, 255, 255, 0.08); /* Darker version of separator */
+  --color-neutral-muted: rgba(255, 255, 255, 0.1); /* Slightly lighter */
+  --color-accent-fg: #ecf0f1; /* --accent-color */
+  --color-accent-emphasis: #bdc3c7; /* --accent-color-darker */
+  --color-accent-muted: rgba(236, 240, 241, 0.4);
+  --color-accent-subtle: rgba(236, 240, 241, 0.1);
+  --color-success-fg: #2ecc71; /* Guess: Lighter Green */
+  --color-attention-fg: #f1c40f; /* Guess: Lighter Orange/Yellow */
+  --color-attention-muted: rgba(241, 196, 15, 0.4);
+  --color-attention-subtle: rgba(241, 196, 15, 0.1);
+  --color-danger-fg: #e74c3c; /* Guess: Lighter Red */
+  --color-danger-muted: rgba(231, 76, 60, 0.4);
+  --color-danger-subtle: rgba(231, 76, 60, 0.1);
+  --color-primer-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --color-primer-canvas-backdrop: rgba(0, 0, 0, 0.7);
+  --color-primer-canvas-sticky: rgba(48, 48, 48, 0.95);
+}
+
+/* Add your CSS rules here */ 
