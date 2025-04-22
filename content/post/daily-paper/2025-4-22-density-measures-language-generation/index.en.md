@@ -60,10 +60,6 @@ Large language models (LLMs) excel at generating fluent text but struggle with b
 - Guarantees $\mu_{\text{low}}(O, K) \geq \frac{1}{8}$, outperforming the KM algorithm.
 - Introduces "infinite perfect towers" to analyze low-density cases.
 
-## Practical Implications
-
-- Offers a foundation to tackle mode collapse and hallucination in LLMs.
-- Density measures can assess output diversity, guiding adaptive generation strategies.
 
 ## Summary
 
