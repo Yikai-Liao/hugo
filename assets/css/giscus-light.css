@@ -1,0 +1,58 @@
+/* Custom Giscus Light Theme Styles - Based on Hugo Stack Theme */
+:root {
+  /* Syntax Highlighting (Best Guess Mapping) */
+  --color-prettylights-syntax-comment: #747474; /* --card-text-color-secondary */
+  --color-prettylights-syntax-constant: #2c3e50; /* --accent-color-darker */
+  --color-prettylights-syntax-entity: #34495e; /* --accent-color */
+  --color-prettylights-syntax-storage-modifier-import: #000; /* --card-text-color-main */
+  --color-prettylights-syntax-entity-tag: #2c3e50; /* --accent-color-darker */
+  --color-prettylights-syntax-keyword: #34495e; /* --accent-color */
+  --color-prettylights-syntax-string: #707070; /* --body-text-color */
+  --color-prettylights-syntax-variable: #2c3e50; /* --accent-color-darker */
+  --color-prettylights-syntax-brackethighlighter-unmatched: #c0392b; /* A guess for red */
+  --color-prettylights-syntax-invalid-illegal-text: #fff;
+  --color-prettylights-syntax-invalid-illegal-bg: #c0392b; /* A guess for red */
+  --color-prettylights-syntax-carriage-return-text: #fff;
+  --color-prettylights-syntax-carriage-return-bg: #c0392b; /* A guess for red */
+  --color-prettylights-syntax-string-regexp: #27ae60; /* A guess for green */
+  --color-prettylights-syntax-markup-list: #707070; /* --body-text-color */
+  --color-prettylights-syntax-markup-heading: #2c3e50; /* --accent-color-darker */
+  --color-prettylights-syntax-markup-italic: #000; /* --card-text-color-main */
+  --color-prettylights-syntax-markup-bold: #000; /* --card-text-color-main */
+  --color-prettylights-syntax-markup-deleted-text: #c0392b;
+  --color-prettylights-syntax-markup-deleted-bg: rgba(192, 57, 43, 0.1);
+  --color-prettylights-syntax-markup-inserted-text: #27ae60;
+  --color-prettylights-syntax-markup-inserted-bg: rgba(39, 174, 96, 0.1);
+  --color-prettylights-syntax-markup-changed-text: #f39c12; /* A guess for orange */
+  --color-prettylights-syntax-markup-changed-bg: rgba(243, 156, 18, 0.1);
+  --color-prettylights-syntax-markup-ignored-text: #bdc3c7;
+  --color-prettylights-syntax-markup-ignored-bg: #34495e;
+  --color-prettylights-syntax-meta-diff-range: #34495e;
+  --color-prettylights-syntax-brackethighlighter-angle: #767676; /* --card-text-color-tertiary */
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #bdc3c7;
+  --color-prettylights-syntax-constant-other-reference-link: #34495e; /* --accent-color */
+
+  /* Core Colors */
+  --color-fg-default: #000; /* --card-text-color-main */
+  --color-fg-muted: #747474; /* --card-text-color-secondary */
+  --color-fg-subtle: #767676; /* --card-text-color-tertiary */
+  --color-canvas-default: #fff; /* --card-background */
+  --color-canvas-subtle: #f5f5fa; /* --body-background */
+  --color-border-default: rgba(218, 218, 218, 0.5); /* --card-separator-color */
+  --color-border-muted: rgba(218, 218, 218, 0.25); /* Lighter version of separator */
+  --color-neutral-muted: rgba(218, 218, 218, 0.2); /* Even lighter */
+  --color-accent-fg: #34495e; /* --accent-color */
+  --color-accent-emphasis: #2c3e50; /* --accent-color-darker */
+  --color-accent-muted: rgba(52, 73, 94, 0.4); /* Derived from --accent-color */
+  --color-accent-subtle: rgba(52, 73, 94, 0.1); /* Derived from --accent-color */
+  --color-success-fg: #27ae60; /* Guess: Green */
+  --color-attention-fg: #f39c12; /* Guess: Orange */
+  --color-attention-muted: rgba(243, 156, 18, 0.4);
+  --color-attention-subtle: rgba(243, 156, 18, 0.1);
+  --color-danger-fg: #c0392b; /* Guess: Red */
+  --color-danger-muted: rgba(192, 57, 43, 0.4);
+  --color-danger-subtle: rgba(192, 57, 43, 0.1);
+  --color-primer-shadow-inset: inset 0 1px 0 rgba(218, 218, 218, 0.1);
+  --color-primer-canvas-backdrop: rgba(0, 0, 0, 0.4);
+  --color-primer-canvas-sticky: rgba(255, 255, 255, 0.95);
+} 
