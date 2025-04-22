@@ -1,0 +1,17 @@
+{{- $articles := slice -}}
+{{- $mainSections := .Site.Params.mainSections | default (slice "post") -}}
+{{- $pages := where .Site.RegularPages "Section" "in" $mainSections -}}
+{{- range $pages -}}
+  {{- $slug := .Slug | default .File.ContentBaseName -}}
+  {{- $article := dict 
+    "id" .File.UniqueID 
+    "title" (.Title | plainify) 
+    "url" .Permalink 
+    "lang" .Lang
+    "slug" $slug
+    "rawContent" .RawContent
+    "description" (.Description | default (.Summary | plainify))
+  -}}
+  {{- $articles = $articles | append $article -}}
+{{- end -}}
+{{- $articles | jsonify (dict "indent" "  ") -}} 

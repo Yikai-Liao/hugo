@@ -29,7 +29,7 @@ pagerSize = 5
 
 [outputs]
   # Combine outputs from both branches
-  home = ["HTML", "RSS", "JSON"]
+  home = ["HTML", "RSS", "JSON", "ARTICLES"]
   section = ["HTML", "RSS", "ContentJSON"]
   taxonomy = ["HTML"]
   term = ["HTML"]
@@ -46,6 +46,12 @@ pagerSize = 5
     baseName = "content" 
     isPlainText = true
     notAlternative = true
+  # Define ARTICLES format for our AI search backend
+  [outputFormats.ARTICLES]
+    mediaType = "application/json"
+    baseName = "articles" # This will generate articles.json
+    isPlainText = false   # Make sure it handles JSON correctly, not plain text
+    notAlternative = true # Don't list in <link rel="alternative">
 
 [services]
   [services.rss]

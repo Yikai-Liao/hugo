@@ -37,4 +37,8 @@ SCORE_THRESHOLD = 0.4
 # Build configuration (optional, if you have build steps)
 # [build]
 # command = "npm run build"
-# watch_dir = "src" 
+# watch_dir = "src"
+
+[[r2_buckets]]
+binding = "R2_BUCKET" # Name used in worker code (env.R2_BUCKET)
+bucket_name = "hugo-blog-content" # Your actual R2 bucket name 

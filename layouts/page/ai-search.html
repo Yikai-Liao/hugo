@@ -2,6 +2,27 @@
 {{ define "main" }}
 {{/* Add custom styles for AI Search dark mode with explicit colors */}}
 <style>
+/* Spinner Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.search-loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1); /* Light border */
+    border-left-color: #007bff; /* Spinner color */
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto; /* Center the spinner */
+}
+
+html[data-scheme="dark"] .search-loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.2); /* Dark mode light border */
+    border-left-color: #aecbfa; /* Dark mode spinner color */
+}
+
 /* Ensure form and paragraph have relative positioning for absolute label */
 .search-form p {
     position: relative;
@@ -124,7 +145,7 @@ html[data-scheme="dark"] .ai-brain-icon {
 
         <!-- Container for Unified Search Results -->
         <div class="search-results-section">
-            <div id="ai-search-loading" class="search-loading" style="display: none;">正在智能搜索中...</div>
+            <div id="ai-search-loading" class="search-loading" style="display: none;"><div class="search-loading-spinner"></div></div>
             <div id="ai-search-error" class="search-error" style="display: none;"></div>
             <ul id="search-results" class="search-results" aria-live="polite"></ul>
         </div>

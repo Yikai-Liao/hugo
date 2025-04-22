@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 统一获取结果 key（优先 permalink，否则 anchor_link，取 path，去除锚点、参数、末尾斜杠）
   function getResultKey(item) {
-    const link = item.permalink || item.anchor_link || '';
+    const link = item.permalink || item.anchor_link || item.url || '';
     let path = link;
     try {
       if (link.startsWith('http')) {
@@ -224,45 +224,82 @@ document.addEventListener('DOMContentLoaded', () => {
     return path.replace(/[#?].*$/, '').replace(/\/$/, '');
   }
 
+  // Function to merge AI and Keyword results, remove duplicates, and display
   function mergeAndDisplayResults() {
-    const aiResults = aiResultsGlobal || [];
-    const keywordResults = keywordResultsGlobal || [];
-    const mergedMap = new Map();
-
-    console.log('AI Results:', aiResults);
-    console.log('Keyword Results:', keywordResults);
-
-    // 先放规则检索，isAIOnly: false
-    keywordResults.forEach(item => {
-      const key = getResultKey(item);
-      mergedMap.set(key, { ...item, isAIOnly: false });
-    });
-
-    // 再遍历AI检索
-    aiResults.forEach(aiItem => {
-      const key = getResultKey(aiItem);
-      if (mergedMap.has(key)) {
-        // 合并时优先保留规则检索的高亮内容
-        mergedMap.set(key, { ...aiItem, ...mergedMap.get(key), isAIOnly: false });
-      } else if (key) {
-        mergedMap.set(key, { ...aiItem, isAIOnly: true });
+      if (!aiDone || !keywordDone) {
+          // console.log("Waiting for both searches to complete..."); // DEBUG
+          return; // Wait for both searches to finish
       }
-    });
 
-    // 保持AI检索顺序优先，规则独有的补在后面
-    const aiKeys = aiResults.map(getResultKey);
-    const merged = [];
-    aiKeys.forEach(key => {
-      if (mergedMap.has(key)) {
-        merged.push(mergedMap.get(key));
-        mergedMap.delete(key);
+      console.log("[Merge Debug] Entering mergeAndDisplayResults.");
+      console.log("[Merge Debug] AI Done:", aiDone, "Keyword Done:", keywordDone);
+      console.log("[Merge Debug] Raw AI Results:", JSON.stringify(aiResultsGlobal));
+      console.log("[Merge Debug] Raw Keyword Results:", JSON.stringify(keywordResultsGlobal));
+
+      loadingIndicator.style.display = 'none';
+      errorContainer.style.display = 'none';
+      unifiedResultsContainer.innerHTML = '';
+
+      let combinedResults = [];
+      const seenKeys = new Set();
+      const resultsMap = new Map(); // Use a map to easily update items
+
+      console.log("[Merge Debug] Processing AI results...");
+      if (Array.isArray(aiResultsGlobal)) {
+          aiResultsGlobal.forEach((item, index) => {
+              const key = getResultKey(item);
+              console.log(`[Merge Debug] AI Item ${index}: Key='${key}', Seen=${seenKeys.has(key)}`);
+              if (!seenKeys.has(key)) {
+                  const aiItem = { ...item, type: 'ai' };
+                  combinedResults.push(aiItem); // Preserve AI order
+                  seenKeys.add(key);
+                  resultsMap.set(key, aiItem); // Store for potential update
+              } else {
+                  console.log(`[Merge Debug] Duplicate key found and skipped (AI pass): ${key}`);
+              }
+          });
       }
-    });
-    // 补充规则独有
-    mergedMap.forEach(item => merged.push(item));
 
-    console.log('Merged Results:', merged);
-    displayUnifiedResults(merged);
+      console.log("[Merge Debug] Processing Keyword results...");
+      if (Array.isArray(keywordResultsGlobal)) {
+          keywordResultsGlobal.forEach((item, index) => {
+              const key = getResultKey(item);
+              console.log(`[Merge Debug] Keyword Item ${index}: Key='${key}', Seen=${seenKeys.has(key)}`);
+              if (seenKeys.has(key)) {
+                  // Already exists (from AI), check if keyword version has highlighted preview/title
+                  const existingItem = resultsMap.get(key);
+                  const hasHighlightPreview = item.preview && item.preview.includes('<mark>');
+                  const hasHighlightTitle = item.title && item.title.includes('<mark>');
+
+                  if (existingItem && (hasHighlightPreview || hasHighlightTitle) ) {
+                      console.log(`[Merge Debug] Updating item for key ${key} with highlighted keyword content.`);
+                      if (hasHighlightPreview) {
+                          existingItem.preview = item.preview; // Update preview
+                      }
+                      if (hasHighlightTitle) {
+                         existingItem.title = item.title; // Update title
+                      }
+                      // Keep original AI score if needed, or decide which score to keep.
+                      // For simplicity, let's mark its type as keyword because we prioritized its content.
+                      existingItem.type = 'keyword'; 
+                  } else {
+                      console.log(`[Merge Debug] Duplicate key ${key} found, but keyword version has no highlights. Keeping AI version.`);
+                  }
+              } else {
+                  // New item only found in keyword search
+                  console.log(`[Merge Debug] Adding keyword-only item for key ${key}.`);
+                  const keywordItem = { ...item, type: 'keyword' };
+                  combinedResults.push(keywordItem); // Append to the end
+                  seenKeys.add(key);
+                  // Optionally add to map if needed later: resultsMap.set(key, keywordItem);
+              }
+          });
+      }
+
+      console.log(`[Merge Debug] Final combined results count: ${combinedResults.length}`);
+      console.log("[Merge Debug] Combined Results (before display):", JSON.stringify(combinedResults));
+
+      displayUnifiedResults(combinedResults);
   }
 
   function displayUnifiedResults(results) {
@@ -274,51 +311,92 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const fragment = document.createDocumentFragment();
     results.forEach(result => {
-      console.log('Render:', getResultKey(result), result.isAIOnly, result);
-      if (result.isAIOnly) {
-        console.log('AI-only to render:', result);
-      }
       const li = document.createElement('li');
       li.className = 'search-result-item article-list--compact__item';
+
       const a = document.createElement('a');
-      // 拼接 baseURL，确保跳转适配本地和线上
       const base = document.querySelector('base')?.href || '/';
-      let href = result.permalink || result.anchor_link;
+      let href = result.permalink || result.anchor_link || result.url; // Use url as fallback
       if (href && !href.startsWith('http')) {
         href = base.replace(/\/$/, '') + (href.startsWith('/') ? href : '/' + href);
       }
-      a.href = href;
+      a.href = href || '#'; // Add fallback href
       a.className = 'article-list--compact__link';
+
       // 标题
       const titleSpan = document.createElement('span');
       titleSpan.className = 'article-list--compact__title';
-      // 规则检索有高亮，AI无
-      if (result.title && result.title.includes('<mark>')) {
-        titleSpan.innerHTML = result.title;
-      } else {
-        titleSpan.textContent = result.title;
+
+      // Use result title directly first
+      let displayTitle = result.title || "Untitled";
+      let useTitleHTML = false;
+
+      // Check type for highlighting
+      if (result.type === 'keyword' && displayTitle.includes('<mark>')) {
+          useTitleHTML = true;
       }
-      // AI-only结果加脑图标（先设置内容再插入图标，避免被覆盖）
-      if (result.isAIOnly) {
+
+      if (useTitleHTML) {
+         titleSpan.innerHTML = displayTitle;
+      } else {
+         titleSpan.textContent = displayTitle;
+      }
+
+      // Add AI brain icon if it's an AI result
+      if (result.type === 'ai') {
         const brainIcon = document.createElement('img');
         brainIcon.className = 'ai-brain-icon';
         brainIcon.alt = 'AI';
         brainIcon.src = base.replace(/\/$/, '') + '/icons/brain.svg';
-        titleSpan.prepend(brainIcon);
+        titleSpan.prepend(brainIcon); // Prepend icon to title span
       }
-      a.appendChild(titleSpan);
-      // 摘要/预览
+      a.appendChild(titleSpan); // Add title to link
+
+      // 摘要/预览 (Add inside the link)
       const p = document.createElement('p');
       p.className = 'article-list--compact__summary';
-      if (result.preview && result.preview.includes('<mark>')) {
-        p.innerHTML = result.preview;
-      } else if (result.preview) {
-        p.textContent = result.preview;
-      } else if (result.content) {
-        p.textContent = result.content.substring(0, 140);
+      let previewText = '';
+      let usePreviewHTML = false;
+
+      if (result.type === 'keyword' && result.preview) {
+        // Keyword search provides a pre-generated preview with highlights
+        previewText = result.preview;
+        if (previewText.includes('<mark>')) {
+            usePreviewHTML = true;
+        }
+      } else if (result.type === 'ai') {
+        // AI search: find content from local keywordData
+        const key = getResultKey(result);
+        const localData = keywordData?.find(item => getResultKey(item) === key);
+        if (localData && localData.content) {
+          // Generate preview from local content
+          const fullContent = localData.content;
+          previewText = fullContent.substring(0, 140); // Extract first 140 chars
+          if (fullContent.length > 140) {
+            previewText += '...'; // Add ellipsis if content was longer
+          }
+        } else {
+          console.warn(`[Display Preview] Could not find local content for AI result key: ${key}`);
+          previewText = '...'; // Fallback if local content not found
+        }
+      } else if (result.preview) { // Fallback for other types (should not happen often)
+        previewText = result.preview;
       }
-      li.appendChild(a);
-      li.appendChild(p);
+      // Note: We don't use result.content directly anymore unless it's from localData for AI results
+
+      // Set the preview text (using innerHTML only if needed for keyword marks)
+      if (usePreviewHTML) {
+        p.innerHTML = previewText;
+      } else {
+        p.textContent = previewText;
+      }
+
+      // Only append paragraph if it has content
+      if (previewText) {
+        a.appendChild(p); // Append preview paragraph inside the link
+      }
+
+      li.appendChild(a); // Add the complete link (with title and preview) to the list item
       fragment.appendChild(li);
     });
     unifiedResultsContainer.appendChild(fragment);
