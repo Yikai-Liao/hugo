@@ -26,7 +26,7 @@ binding = "AI"
 [vars]
 # Define a score threshold for filtering results
 # Matches with a score below this value will be discarded
-SCORE_THRESHOLD = 0.5
+SCORE_THRESHOLD = 0.4
 
 # Environment variables (optional, for external embedding APIs)
 # You'll need to set these secrets using `wrangler secret put VAR_NAME`
