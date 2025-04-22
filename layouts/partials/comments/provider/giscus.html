@@ -7,92 +7,125 @@
     {{ $lightCssResource := resources.Get "css/giscus-light.css" }}
     {{ $darkCssResource := resources.Get "css/giscus-dark.css" }}
     {{/* Get absolute permalink respecting final baseURL, then make protocol-relative */}}
-    {{ $giscusLightCss := $lightCssResource.Permalink | replaceRE "^https?:" "" }}
-    {{ $giscusDarkCss := $darkCssResource.Permalink | replaceRE "^https?:" "" }}
+    {{ $giscusLightCss := "https://yikai-liao.github.io/giscus-theme/giscus-light.css" }}
+    {{ $giscusDarkCss := "https://yikai-liao.github.io/giscus-theme/giscus-dark.css" }}
 
     {{/* Determine the term to use for mapping. Prioritize slug, fallback to title */}}
     {{ $giscusTerm := $.Page.Slug | default $.Page.Title }}
 
-    <div class="giscus" id="giscus-comments"></div>
-    {{/* Giscus main script - Use protocol-relative URL from resource permalink */}}
-    <script src="https://giscus.app/client.js"
-            data-repo="{{ .repo }}"
-            data-repo-id="{{ .repoID }}"
-            data-category="{{ .category }}"
-            data-category-id="{{ .categoryID }}"
-            data-mapping="specific"
-            data-term="{{ $giscusTerm }}"
-            data-strict="{{ .strict | default "0" }}"
-            data-reactions-enabled="{{ .reactionsEnabled | default "1" }}"
-            data-emit-metadata="{{ .emitMetadata | default "0" }}"
-            data-input-position="{{ .inputPosition | default "bottom" }}"
-            data-theme="{{ $giscusLightCss }}" {{/* Default to protocol-relative light theme CSS URL */}}
-            data-lang="{{ $giscusLang }}"
-            data-loading="{{ .loading | default "lazy" }}"
-            crossorigin="anonymous"
-            async>
-    </script>
-
-    {{/* Giscus theme switching script - Use protocol-relative CSS URLs */}}
+    <div id="giscus-comments"></div>
     <script>
-      (function () {
-        const themeAttribute = 'data-scheme'; // Theme attribute on <html> tag
-        const GiscusTheme = {
-          light: '{{ $giscusLightCss }}',
-          dark: '{{ $giscusDarkCss }}'
-        };
+    const GISCUS_LIGHT = "https://yikai-liao.github.io/giscus-theme/giscus-light.css";
+    const GISCUS_DARK = "https://yikai-liao.github.io/giscus-theme/giscus-dark.css";
 
-        function setGiscusTheme(themeUrl) {
-            const iframe = document.querySelector("iframe.giscus-frame");
-            if (iframe && iframe.contentWindow) {
-                iframe.contentWindow.postMessage({ giscus: { setTheme: themeUrl } }, 'https://giscus.app');
-            } else {
-                 // console.warn('Giscus iframe not found or not ready for theme change.');
-            }
+    // Function to get the CURRENT theme based on data-scheme
+    function getCurrentGiscusTheme() {
+      try {
+        const scheme = document.documentElement.getAttribute('data-scheme');
+        return scheme === 'dark' ? GISCUS_DARK : GISCUS_LIGHT;
+      } catch (e) {
+        console.error("Error reading data-scheme:", e);
+        return GISCUS_LIGHT; // Default to light on error
+      }
+    }
+
+    // Function to send the setConfig message to Giscus iframe
+    function setGiscusTheme(theme) {
+      const iframe = document.querySelector('iframe.giscus-frame');
+      if (iframe && iframe.contentWindow) {
+        console.log("[Giscus] Sending setConfig message with theme:", theme);
+        iframe.contentWindow.postMessage({ giscus: { setConfig: { theme: theme } } }, 'https://giscus.app');
+      } else {
+        console.warn("[Giscus] iframe not found or not ready for setConfig message.");
+        // Optional: Retry logic or wait for iframe load event if needed
+      }
+    }
+
+    // Function to load the Giscus script dynamically
+    function loadGiscus() {
+      const initialTheme = getCurrentGiscusTheme();
+      console.log("[Giscus] Initializing with theme:", initialTheme);
+
+      const giscusScript = document.createElement('script');
+      giscusScript.src = 'https://giscus.app/client.js';
+      giscusScript.id = 'giscus-js'; // Add an ID for potential removal/reload if needed later
+      // --- Standard Giscus Attributes ---
+      giscusScript.setAttribute('data-repo', '{{ .repo }}');
+      giscusScript.setAttribute('data-repo-id', '{{ .repoID }}');
+      giscusScript.setAttribute('data-category', '{{ .category }}');
+      giscusScript.setAttribute('data-category-id', '{{ .categoryID }}');
+      giscusScript.setAttribute('data-mapping', 'specific');
+      giscusScript.setAttribute('data-term', '{{ $giscusTerm }}');
+      giscusScript.setAttribute('data-strict', '{{ .strict | default "0" }}');
+      giscusScript.setAttribute('data-reactions-enabled', '{{ .reactionsEnabled | default "1" }}');
+      giscusScript.setAttribute('data-emit-metadata', '{{ .emitMetadata | default "0" }}');
+      giscusScript.setAttribute('data-input-position', '{{ .inputPosition | default "bottom" }}');
+      giscusScript.setAttribute('data-lang', '{{ $giscusLang }}');
+      giscusScript.setAttribute('data-loading', 'lazy');
+      giscusScript.setAttribute('crossorigin', 'anonymous');
+      giscusScript.async = true;
+      // --- Set Initial Theme ---
+      giscusScript.setAttribute('data-theme', initialTheme);
+
+      // --- Append to Container ---
+      const container = document.getElementById('giscus-comments');
+      // Clear previous script if any (useful if this function is called again)
+      const existingScript = document.getElementById('giscus-js');
+      if (existingScript) {
+        container.removeChild(existingScript);
+      }
+        // Clear container content in case of reload
+      container.innerHTML = '';
+      container.appendChild(giscusScript);
+    }
+
+    // --- Initialization and Theme Switching ---
+
+    // Ensure data-scheme is set early (put this script high in <head>)
+    (function() {
+      var scheme = localStorage.getItem('site-theme');
+      if (!scheme) {
+        scheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-scheme', scheme);
+      console.log("[Init] Initial data-scheme set to:", scheme);
+    })();
+
+
+    // Load Giscus after DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("[DOM Ready] data-scheme is:", document.documentElement.getAttribute('data-scheme'));
+      loadGiscus();
+
+      // Use MutationObserver to detect theme changes and send postMessage
+      const observer = new MutationObserver((mutationsList) => {
+        for (const mutation of mutationsList) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'data-scheme') {
+            const newTheme = getCurrentGiscusTheme();
+            console.log("[Observer] data-scheme changed, attempting to set Giscus theme to:", newTheme);
+            // Add a small delay to ensure iframe might be ready
+            setTimeout(() => setGiscusTheme(newTheme), 150);
+            break; // Only handle the first relevant mutation
+          }
         }
+      });
 
-        const changeGiscusTheme = () => {
-          try {
-              const currentScheme = document.documentElement.getAttribute(themeAttribute);
-              const targetThemeUrl = (currentScheme === 'dark') ? GiscusTheme.dark : GiscusTheme.light;
-              // console.log(`[Giscus Theme] Setting theme based on data-scheme='${currentScheme}': ${targetThemeUrl}`); // Debug log
-              setGiscusTheme(targetThemeUrl);
-          } catch (e) {
-              console.error("[Giscus Theme] Error changing theme URL:", e);
-          }
-        };
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-scheme'] });
 
-        // Immediately set the correct theme on script load
-        setTimeout(changeGiscusTheme, 1);
-
-        // Observe subsequent theme changes
-        const observer = new MutationObserver((mutationsList) => {
-          for (const mutation of mutationsList) {
-            if (mutation.type === 'attributes' && mutation.attributeName === themeAttribute) {
-              // console.log("[Giscus Theme] Detected data-scheme change."); // Debug log
-              changeGiscusTheme();
-              break;
+      // Optional: Listen for messages from Giscus in case initial setConfig fails
+      // This helps if the iframe loads slower than the initial postMessage attempt
+        window.addEventListener('message', (event) => {
+            if (event.origin === 'https://giscus.app' && event.data && event.data.giscus) {
+                // Example: If giscus signals it's ready, ensure theme is set correctly
+                // This part needs more specific logic based on actual giscus events if available
+                 console.log("[Giscus Message] Received:", event.data.giscus);
+                // Potential re-sync logic:
+                // const currentTheme = getCurrentGiscusTheme();
+                // setGiscusTheme(currentTheme);
             }
-          }
         });
 
-        // Start observing
-        try {
-            observer.observe(document.documentElement, { attributes: true });
-        } catch (e) {
-            console.error("[Giscus Theme] Error observing theme changes:", e);
-        }
-
-        // Re-apply theme when Giscus iframe loads/sends a message
-        window.addEventListener('message', event => {
-          if (event.origin !== 'https://giscus.app') return;
-          if (event.data && event.data.giscus) {
-            // console.log("[Giscus Theme] Received message from Giscus, re-applying theme."); // Debug log
-             changeGiscusTheme();
-          }
-        });
-
-      })();
+    });
     </script>
     <noscript>Please enable JavaScript to view the comments powered by Giscus.</noscript>
   {{- end }}
