@@ -3,17 +3,18 @@
   {{- with .Site.Params.comments.giscus -}}
     {{/* Use language from config, fallback to zh-CN */}}
     {{ $giscusLang := .lang | default "zh-CN" }}
-    {{/* Use protocol-relative URLs for CSS paths */}}
-    {{ $lightCssPath := "/css/giscus-light.css" }}
-    {{ $darkCssPath := "/css/giscus-dark.css" }}
-    {{ $giscusLightCss := $lightCssPath | absURL | replaceRE "^https?:" "" }}
-    {{ $giscusDarkCss := $darkCssPath | absURL | replaceRE "^https?:" "" }}
+    {{/* Use resources.Get and .Permalink for CSS paths */}}
+    {{ $lightCssResource := resources.Get "css/giscus-light.css" }}
+    {{ $darkCssResource := resources.Get "css/giscus-dark.css" }}
+    {{/* Get absolute permalink respecting final baseURL, then make protocol-relative */}}
+    {{ $giscusLightCss := $lightCssResource.Permalink | replaceRE "^https?:" "" }}
+    {{ $giscusDarkCss := $darkCssResource.Permalink | replaceRE "^https?:" "" }}
 
     {{/* Determine the term to use for mapping. Prioritize slug, fallback to title */}}
     {{ $giscusTerm := $.Page.Slug | default $.Page.Title }}
 
     <div class="giscus" id="giscus-comments"></div>
-    {{/* Giscus main script - Use protocol-relative URL for default theme */}}
+    {{/* Giscus main script - Use protocol-relative URL from resource permalink */}}
     <script src="https://giscus.app/client.js"
             data-repo="{{ .repo }}"
             data-repo-id="{{ .repoID }}"
