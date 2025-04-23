@@ -42,3 +42,7 @@
 # --- Params (Example - ensure yours is present) ---
 [params]
   mainSections = ["post"] # If you use this to filter pages 
+
+[services]
+[services.googleAnalytics]
+ID = 'G-TCF6N1B45N'
